@@ -1,0 +1,212 @@
+[
+  {
+    "retCode": 0,
+    "retMsg": "OK",
+    "result": {
+      "category": "linear",
+      "list": [
+        {
+          "symbol": "BTCUSDT",
+          "contractType": "LinearPerpetual",
+          "status": "Trading",
+          "baseCoin": "BTC",
+          "quoteCoin": "USDT",
+          "launchTime": "1585526400000",
+          "deliveryTime": "0",
+          "deliveryFeeRate": "",
+          "priceScale": "2",
+          "leverageFilter": {
+            "minLeverage": "1",
+            "maxLeverage": "100.00",
+            "leverageStep": "0.01"
+          },
+          "priceFilter": {
+            "minPrice": "0.10",
+            "maxPrice": "1999999.80",
+            "tickSize": "0.10"
+          },
+          "lotSizeFilter": {
+            "maxOrderQty": "1190.000",
+            "minOrderQty": "0.001",
+            "qtyStep": "0.001",
+            "postOnlyMaxOrderQty": "1190.000",
+            "maxMktOrderQty": "500.000",
+            "minNotionalValue": "5"
+          },
+          "unifiedMarginTrade": true,
+          "fundingInterval": 480,
+          "settleCoin": "USDT",
+          "copyTrading": "both",
+          "upperFundingRate": "0.00375",
+          "lowerFundingRate": "-0.00375",
+          "isPreListing": false,
+          "preListingInfo": null,
+          "riskParameters": {
+            "priceLimitRatioX": "0.01",
+            "priceLimitRatioY": "0.02"
+          }
+        }
+      ],
+      "nextPageCursor": ""
+    },
+    "retExtInfo": {},
+    "time": 1735809771618
+  },
+  {
+    "retCode": 0,
+    "retMsg": "OK",
+    "result": {
+      "category": "spot",
+      "list": [
+        {
+          "symbol": "BTCUSDT",
+          "baseCoin": "BTC",
+          "quoteCoin": "USDT",
+          "innovation": "0",
+          "status": "Trading",
+          "marginTrading": "utaOnly",
+          "stTag": "0",
+          "lotSizeFilter": {
+            "basePrecision": "0.000001",
+            "quotePrecision": "0.00000001",
+            "minOrderQty": "0.000048",
+            "maxOrderQty": "71.73956243",
+            "minOrderAmt": "1",
+            "maxOrderAmt": "2000000"
+          },
+          "priceFilter": {
+            "tickSize": "0.01"
+          },
+          "riskParameters": {
+            "priceLimitRatioX": "0.01",
+            "priceLimitRatioY": "0.02"
+          }
+        }
+      ]
+    },
+    "retExtInfo": {},
+    "time": 1672712468011
+  },
+  {
+    "retCode": 0,
+    "retMsg": "OK",
+    "result": {
+      "category": "option",
+      "nextPageCursor": "",
+      "list": [
+        {
+          "symbol": "BTC-27MAR26-70000-P-USDT",
+          "status": "Trading",
+          "baseCoin": "BTC",
+          "quoteCoin": "USDT",
+          "settleCoin": "USDT",
+          "optionsType": "Put",
+          "launchTime": "1743669649256",
+          "deliveryTime": "1774598400000",
+          "deliveryFeeRate": "0.00015",
+          "priceFilter": {
+            "minPrice": "5",
+            "maxPrice": "1110000",
+            "tickSize": "5"
+          },
+          "lotSizeFilter": {
+            "maxOrderQty": "500",
+            "minOrderQty": "0.01",
+            "qtyStep": "0.01"
+          },
+          "displayName": "BTCUSDT-27MAR26-70000-P"
+        }
+      ]
+    },
+    "retExtInfo": {},
+    "time": 1672712537130
+  },
+  {
+    'symbol': 'SWARMSUSDT',
+    'contractType': 'LinearPerpetual',
+    'status': 'Trading',
+    'baseCoin': 'SWARMS',
+    'quoteCoin': 'USDT',
+    'launchTime': '1736152318000',
+    'deliveryTime': '0',
+    'deliveryFeeRate': '',
+    'priceScale': '5',
+    'leverageFilter': {
+      'minLeverage': '1',
+      'maxLeverage': '75.00',
+      'leverageStep': '0.01'
+    },
+    'priceFilter': {
+      'minPrice': '0.00001',
+      'maxPrice': '199.99998',
+      'tickSize': '0.00001'
+    },
+    'lotSizeFilter': {
+      'maxOrderQty': '5000000',
+      'minOrderQty': '1',
+      'qtyStep': '1',
+      'postOnlyMaxOrderQty': '5000000',
+      'maxMktOrderQty': '1000000',
+      'minNotionalValue': '5'
+    },
+    'unifiedMarginTrade': True,
+    'fundingInterval': 240,
+    'settleCoin': 'USDT',
+    'copyTrading': 'both',
+    'upperFundingRate': '0.0066',
+    'lowerFundingRate': '-0.0066',
+    'isPreListing': False,
+    'preListingInfo': None,
+    'riskParameters': {
+      'priceLimitRatioX': '0.15',
+      'priceLimitRatioY': '0.3'
+    },
+    'displayName': ''
+  },
+  {
+    'symbol': 'SAHARAUSDT',
+    'baseCoin': 'SAHARA',
+    'quoteCoin': 'USDT',
+    'innovation': '0',
+    'status': 'Trading',
+    'marginTrading': 'none',
+    'stTag': '0',
+    'lotSizeFilter': {
+      'basePrecision': '0.1',
+      'quotePrecision': '0.000001',
+      'minOrderQty': '0.1',
+      'maxOrderQty': '2055709.733786',
+      'minOrderAmt': '5',
+      'maxOrderAmt': '200000'
+    },
+    'priceFilter': {
+      'tickSize': '0.00001'
+    },
+    'riskParameters': {
+      'priceLimitRatioX': '0.05',
+      'priceLimitRatioY': '0.1'
+    }
+  },
+  {
+    'symbol': 'BTC-11JUL25-97000-C-USDT',
+    'status': 'Trading',
+    'baseCoin': 'BTC',
+    'quoteCoin': 'USDT',
+    'settleCoin': 'USDT',
+    'optionsType': 'Call',
+    'launchTime': '1750646082744',
+    'deliveryTime': '1752220800000',
+    'deliveryFeeRate': '0.00015',
+    'priceFilter': {
+      'minPrice': '5',
+      'maxPrice': '1110000',
+      'tickSize': '5'
+    },
+    'lotSizeFilter': {
+      'maxOrderQty': '500',
+      'minOrderQty': '0.01',
+      'qtyStep': '0.01'
+    },
+    'displayName': 'BTCUSDT-11JUL25-97000-C'
+  }
+]
