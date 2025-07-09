@@ -7,4 +7,14 @@ app_name = 'charts'
 urlpatterns = [
     path('', views.test_view),
     path('api/v1/klines/', views.KlineDataView.as_view(), name='klines_data'),
+    path(
+        'api/v1/categories/<str:exchange>/',
+        views.CategoriesAPIView.as_view(),
+        name='exchange_categories'
+    ),
+    path(
+        'api/v1/instrument-symbol-list/<str:exchange>/<str:category>/',
+        views.InstrumentSymbolsAPIView.as_view(),
+        name='instrument_symbols'
+    ),
 ]

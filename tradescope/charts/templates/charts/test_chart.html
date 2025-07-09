@@ -18,20 +18,22 @@
     <div class="row mainChart">
       <div id="toolbar">
         <!-- markets -->
-        <div class="btn-group">
+        <div class="btn-group" id="dropdown_market_list">
           <button id="markets-list-btn" type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown"
             aria-expanded="false">
-            {{ exchange_default.title }}
+            Bybit
           </button>
           <ul class="dropdown-menu" id="markets-list">
+
             <!--Получение доступных в базе бирж-->
             {% for exch in exchanges %}
               <li><a class="dropdown-item" href="#">{{ exch.title }}</a></li>            
             {% endfor %}
+            
           </ul>
         </div>
         <!-- securities -->
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchModal">BTCUSDT</button>
+        <button id="btn-instruents" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchModal">BTCUSDT</button>
         
         <!-- timeframe -->
         <div class="btn-group">
@@ -75,36 +77,38 @@
                   d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
               </svg>
             </span>
-            <input type="text" class="form-control border-0 text-white" placeholder="{{instruments.0.symbol}}" value="">
+            <input id="modal-inputfield-search" type="text" class="form-control border-0 text-white" placeholder="" value="">
           </div>
 
           <!-- Фильтры -->
           <!--Необходимо запросить при открытии диалогового окна по значению которое находится в категории биржи-->
-          <div class="mb-3 d-flex flex-wrap gap-2">
+          <div class="mb-3 d-flex flex-wrap gap-2" id="modal-btn-categories">
             
-            {% for cat in exchange_default.categories.all %}
+            {% comment %} {% for cat in exchange_default.categories.all %}
               {% if cat.title == 'spot' %}
                 <button class="btn btn-selected btn-sm rounded-pill">{{cat.description}}</button>
               {% else %}
                 <button class="btn btn-secondary btn-sm rounded-pill">{{cat.description}}</button> 
               {% endif %}                         
-            {% endfor %}            
+            {% endfor %}             {% endcomment %}
             
           </div>
           <!-- Список инструментов -->
 
             <div class="search-list overflow-auto">
               <!-- длинный список -->
-                
-                <ul class="instrument-list rounded shadow-sm p-2">
+                <!--Загрузка элементов списка по событию открытия модального окна-->
+                <ul id="modal-instrument-list" class="instrument-list rounded shadow-sm p-2">
 
-                  <!---->
+                  <!--
 
                     {% for instr in instruments %}
                     <li class="instrument-item">
                       <a href="#" class="">{{ instr.symbol }}</a>                
                     </li>
                     {% endfor %}
+
+                  -->
                     
                 </ul>
             </div>
@@ -118,20 +122,7 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function(event) {
-      let temp;
-      console.dir(document.cookie)
-      // const csrftoken = getCookie('csrftoken');
-      console.log('hello');
-      let url = '{% url "charts:klines_data" %}'
-      console.log(url)
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          temp = data;
-          console.log('temp:', temp);
-        })                     
-    });    
+       
   </script>
   <script src="{% static "js/main.js" %}"></script>
 
