@@ -11,6 +11,9 @@ from .models import (
     HistoricalDataByBitLinear,
     Exchange,
     InstrumentByBitSpot,
+    InstrumentByBitOption,
+    InstrumentByBitLinear,
+    Category
 )
 
 # Create your views here.
@@ -23,17 +26,12 @@ def test_view(request):
     '''
     tf = ['1ч', '4ч', '1Д', '1Н']
     exchanges = Exchange.objects.all()
-    exchange_default = exchanges.get(title='Bybit')
-    instruments = InstrumentByBitSpot.objects.all()
-    instr_sym_for_spot = instruments.values('symbol')
     return render(
         request,
         'charts/test_chart.html',
         {
             'intervals': tf,
             'exchanges': exchanges,
-            'exchange_default': exchange_default,
-            'instruments': instr_sym_for_spot
         }
     )
 
@@ -55,3 +53,58 @@ class KlineDataView(APIView):
         return Response(
             {'ok': KlineDataView.count}
         )
+
+class CategoriesAPIView(APIView):
+    '''
+    Представление для работы с символами категорий
+    '''
+
+    def get(self, request: Request, exchange: str):
+        cats = (Exchange.objects.get(title=exchange)
+                .categories.all()
+                .values('title', 'description'))
+
+        return Response(
+            {'categories': cats}
+        )
+
+class InstrumentSymbolsAPIView(APIView):
+    '''
+    Класс для работы с символами инструментов
+    '''
+    def get(self, request: Request, exchange: str, category: str):
+        '''
+        При запросе возвращается список доступных инструментов для биржи и категории
+        :param request:
+        :param exchange:
+        :param category:
+        :return:
+        '''
+        data = {
+            'Bybit' : {
+                'futures': InstrumentByBitLinear,
+                'option': InstrumentByBitOption,
+                'spot': InstrumentByBitSpot
+            },
+            'MOEX': {
+                'futures': None,
+                'option': None,
+                'share': None,
+                'bond': None,
+            },
+            'OKX': {
+                'futures': None,
+                'option': None,
+                'spot': None
+            },
+        }
+        model = data.get(exchange, {}).get(category)
+        if model:
+            symbols = model.objects.all().values('symbol')
+            return Response(
+                {'symbols': symbols}
+            )
+        return Response(
+            {'symbols': [{'symbol': 'TEST'}]}
+        )
+
