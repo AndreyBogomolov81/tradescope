@@ -3,6 +3,8 @@ import aiohttp
 from datetime import datetime as dt
 from typing import List
 import pandas as pd
+import numpy as np
+
 
 def get_intervals_for_klines_query(start_date, end_date, interval=15) -> List[dict]:
     '''
@@ -96,6 +98,7 @@ async def get_klines(symbol, category, start_date, end_date, interval='15'):
 
     return results
 
+
 def get_cleared_dataset(data) -> tuple:
     '''
     Функция для сохранение очищенных свечных данных
@@ -116,3 +119,36 @@ def get_cleared_dataset(data) -> tuple:
 
     return start, end, df_sorted.to_json(orient='records')
 
+
+def get_klines_for_instrument(queryset, interval: str):
+    # объединяем в общий датафрейм все данные
+    df_total = pd.concat(
+        [pd.read_json(f.data.path) for f in queryset],
+        axis=0,
+        ignore_index=True
+    ).sort_values(by='time')
+
+    # преобразуем числа в столбце time в дату и индексируем
+    df_total['time'] = pd.to_datetime(df_total['time'], unit='s')
+    df_total.set_index('time', inplace=True)
+
+    # # агрегируем данные по заданному интервалу
+    df_hour = df_total.resample('1h').agg(
+        {
+            'open': 'first',
+            'close': 'last',
+            'high': 'max',
+            'low': 'min',
+            'volume': 'sum'
+        }
+    )
+
+    # сбрасываем индекс для созданного объекта
+    df_hour = df_hour.reset_index()
+
+    # преобразуем формат столбца time
+    df_hour['time'] = df_hour['time'].astype(np.int64)
+    df_hour['time'] = df_hour['time'].apply(lambda x: int(str(x)[:10]))
+
+    # возвращаем словарь
+    return df_hour.to_dict(orient='records')

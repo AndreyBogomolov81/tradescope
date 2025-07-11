@@ -15,6 +15,7 @@ from .models import (
     InstrumentByBitLinear,
     Category
 )
+from .utils import get_klines_for_instrument
 
 # Create your views here.
 def test_view(request):
@@ -35,15 +36,33 @@ def test_view(request):
         }
     )
 
-class KlineDataView(APIView):
+class HistoricalDataView(APIView):
     count = 0
     l = 15
-    def get(self, request: Request):
+    def get(self, request: Request, exchange: str, symbol: str, interval: str):
+        '''
+        Функция для получения исторических данных об инструменте, подгрузка данных ведется из
+        сохраненных данных в БД
+        :param request:
+        :param exchange: имя биржи выделенной в списке выбора бирж
+        :param symbol: выбранный инструмент
+        :param interval: интервал получения данных
+        :return:
+        '''
+
+        # получаем записи связанные с инструментом (15 минутные)
+        instr = InstrumentByBitLinear.objects.get(symbol='BTCUSDT')
+        query = HistoricalDataByBitLinear.objects.filter(coin_id=instr.pk)
+        data = get_klines_for_instrument(
+            queryset=query,
+            interval='1'
+        )
+
         # f = HistoricalDataByBitLinear.objects.first()
         # df = pd.read_json(f.data.path)
-        KlineDataView.count += 1
-        print(id(KlineDataView.count))
-        print(id(KlineDataView.l))
+        HistoricalDataView.count += 1
+        print(id(HistoricalDataView.count))
+        print(id(HistoricalDataView.l))
         print(id(self))
         # return Response(
         #     df.to_dict(orient='records'),
@@ -51,7 +70,7 @@ class KlineDataView(APIView):
         #     content_type='application/json'
         # )
         return Response(
-            {'ok': KlineDataView.count}
+            {'ok': data}
         )
 
 class CategoriesAPIView(APIView):
