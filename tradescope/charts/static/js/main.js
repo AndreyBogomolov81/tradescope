@@ -162,6 +162,7 @@ function set_filters_category_modal(data) {
       }
     });
   }
+  
 }
 
 //функция для получения инструментов

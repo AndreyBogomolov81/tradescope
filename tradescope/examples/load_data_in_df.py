@@ -22,26 +22,42 @@ file_path = os.path.join(
 )
 
 # прочитаем json file
-
-
-
-def main():
+def get_all_klines_for_instrument(queryset, interval: str):
     '''
-    пример получения и преобразования по таймфрему
+    Функция загрузки всех имеющихся данных для графика
+    :param queryset:
+    :param interval:
     :return:
     '''
-    f = HistoricalDataByBitLinear.objects.all()[0]
-    data = pd.read_json(f.data.path)
-    temp = data[:8]
-    temp.loc[:, 'time'] = pd.to_datetime(temp['time'], unit='s')
-    temp.set_index('time', inplace=True) # обязательно
-    print(temp)
-    df_hour = temp.resample('1h').agg({
-        'open': 'first',
-        'close': 'last',
-        'high': 'max',
-        'low': 'min',
-        'volume': 'sum'})
-    # преобразование времени в секндах в время пандас#
-    #  pd.to_datetime(data['time'], unit='s')
+    # объединяем в общий датафрейм все данные
+    df_total = pd.concat(
+        [pd.read_json(f.data.path) for f in queryset],
+        axis=0,
+        ignore_index=True
+    ).sort_values(by='time')
+
+    # преобразуем числа в столбце time в дату и индексируем
+    df_total['time'] = pd.to_datetime(df_total['time'], unit='s')
+    df_total.set_index('time', inplace=True)
+
+    # # агрегируем данные по заданному интервалу
+    df_hour = df_total.resample('4h').agg(
+        {
+            'open': 'first',
+            'close': 'last',
+            'high': 'max',
+            'low': 'min',
+            'volume': 'sum'
+        }
+    )
+
+    # сбрасываем индекс для созданного объекта
+    df_hour = df_hour.reset_index()
+
+    # преобразуем формат столбца time
+    df_hour['time'] = df_hour['time'].astype(np.int64)
+    df_hour['time'] = df_hour['time'].apply(lambda x: int(str(x)[:10]))
+
+    # возвращаем словарь
+    return df_hour.to_dict(orient='records')
 

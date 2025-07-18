@@ -17,7 +17,7 @@ urlpatterns = [
         name='instrument_symbols'
     ),
     path(
-        'api/v1/historical-data/<str:exchange>/<str:symbol>/<str:interval>/',
+        'api/v1/historical-data/',
         views.HistoricalDataView.as_view(),
         name='historical_data'
     ),

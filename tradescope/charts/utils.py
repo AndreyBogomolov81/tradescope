@@ -120,20 +120,22 @@ def get_cleared_dataset(data) -> tuple:
     return start, end, df_sorted.to_json(orient='records')
 
 
-def get_klines_for_instrument(queryset, interval: str):
+def get_klines_for_instrument(record, interval: str):
     # объединяем в общий датафрейм все данные
     df_total = pd.concat(
-        [pd.read_json(f.data.path) for f in queryset],
+        [pd.read_json(f.data.path) for f in record],
         axis=0,
         ignore_index=True
     ).sort_values(by='time')
+
+    # df_total = pd.read_json(record.data.path).sort_values(by='time')
 
     # преобразуем числа в столбце time в дату и индексируем
     df_total['time'] = pd.to_datetime(df_total['time'], unit='s')
     df_total.set_index('time', inplace=True)
 
     # # агрегируем данные по заданному интервалу
-    df_hour = df_total.resample('1h').agg(
+    df_hour = df_total.resample(interval).agg(
         {
             'open': 'first',
             'close': 'last',
@@ -145,10 +147,10 @@ def get_klines_for_instrument(queryset, interval: str):
 
     # сбрасываем индекс для созданного объекта
     df_hour = df_hour.reset_index()
-
     # преобразуем формат столбца time
     df_hour['time'] = df_hour['time'].astype(np.int64)
     df_hour['time'] = df_hour['time'].apply(lambda x: int(str(x)[:10]))
 
+    # print(df_hour['time'].iloc[0])
     # возвращаем словарь
-    return df_hour.to_dict(orient='records')
+    return df_hour['time'].iloc[0], df_hour.to_dict(orient='records')

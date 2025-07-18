@@ -5,6 +5,8 @@ def historical_data_linear_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return "historical_data_bybit/coin_linear_{0}/{1}".format(instance.coin.symbol, filename)
 
+def get_bybit_historical_data(**options):
+    print('symbol:' ,options['symbol'])
 
 # Create your models here.
 class InstrumentByBitLinear(models.Model):
