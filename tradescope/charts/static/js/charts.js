@@ -112,9 +112,9 @@ window.addEventListener('resize', () => {
   chart.resize(window.innerWidth, window.innerHeight);
 });
 
+
 //загрузка данных по событию загрузки DOM
 //загрузка документа
-
 document.addEventListener('DOMContentLoaded', async function (event) {
 
   //загрузка данных будет происходить отсюда
@@ -129,9 +129,10 @@ document.addEventListener('DOMContentLoaded', async function (event) {
     category: this.exchange === 'MOEX' ? 'share' : 'spot',
     start_date: undefined,
     data: [],
+    firstLoad: true
   };
 
-  await gatKlines();
+  await gatKlines(chunks.get(loaded.interval));
 });
 
 
@@ -141,73 +142,6 @@ document.addEventListener('DOMContentLoaded', async function (event) {
 //вторая часть это оставшиеся данные, после того как загрузка пройдет будет время на расширение массива
 
 //первый вариант загрузки данных пачками
-//не рабочий
-let isLoaded = false;
-async function gatKlines() {
-  try {
-    if (isLoaded) return;
-    isLoaded = true;
-    //проверяем на соответствие уже загруженным данным
-    // извлекаем уже загруженные  данные
-    const {
-      exchange: loaded_exch,
-      symbol: loaded_symb,
-      interval: loaded_interval,
-      category: loaded_category,
-      data: loaded_all_data,
-    } = loaded;
-
-    let exchange = document.querySelector('#markets-list-btn').textContent.trim();
-    let symbol = document.querySelector('#btn-instruents').textContent.trim();
-    let interval = document.querySelector('#timeframe-btn').textContent.trim();
-    let category = 'spot';
-
-    let url = BASE_CHARTS_URL + `historical-data/?exchange=${exchange}
-    &symbol=${symbol}&interval=${interval}&category=${category}`;  
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('ошибка сети');
-
-    const query = await response.json();
-    if (query['result']) {
-      //загружаем стартовую дату
-      loaded.start_date = query['start_date'];
-      //если параметры запроса равны прежним то обновляем данные с учетом хронологии
-      if (
-        loaded_exch == exchange && 
-        loaded_symb == symbol && 
-        loaded_interval == interval && 
-        loaded_category == category      
-      ) {
-        loaded.data = [...loaded_all_data, ...query['data']];
-      }
-      else {
-        loaded.data = query['data'];
-      }
-        //если с момента последнего объявления выбрана другая биржа или инструмент, то обновляем данные    
-      if (exchange != loaded_exch)
-        loaded.exchange = exchange;
-
-      if (symbol != loaded_symb)
-        loaded.symbol = symbol;
-
-      if (interval != loaded_interval)
-        loaded.interval = interval;
-
-      mainSeries.setData(query['data']);
-      createLegend(query['data']);
-      loaded.flag = true;
-    }
-    else
-      console.log('данные отсутствуют');
-
-  } catch (error) {
-    console.log('Ошибка:', error);
-  } finally {
-    isLoaded = false;
-  }
-}
-
 const chunks = new Map([
   ['15t', 2],
   ['30t', 2],
@@ -216,24 +150,61 @@ const chunks = new Map([
   ['1DD', 30]
 ]);
 
+async function gatKlines(part_data = 'all') {
+  /*
+  1-й вариант не рабочий
+  2- й вариант: производим минимальную загрузку данных
+  после обновления за счет появления события докачиваем остальные презаписывая исходный массив  
+
+  добавляем два параметра 1 all 2 - step
+  */
+  try {
+    const {
+      exchange,
+      symbol,
+      interval,
+      category,
+    } = loaded;
+
+    let url = BASE_CHARTS_URL + `historical-data/?exchange=${exchange}
+    &symbol=${symbol}&interval=${interval}&category=${category}&part_data=${part_data}`;
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('ошибка сети');
+
+    const query = await response.json();
+    if (query['result']) {
+      //загружаем стартовую дату 
+      loaded.start_date = query['start_date'];
+      loaded.data = query['data'];
+
+      mainSeries.setData(loaded.data);
+      createLegend(loaded.data);
+    }
+    else
+      console.log('данные отсутствуют');
+
+  } catch (error) {
+    console.log('Ошибка:', error);
+  }
+}
+
+
 chart.timeScale().subscribeVisibleLogicalRangeChange(async range => {
-  // console.dir(range);
-  //обновление диапазона
   const step = new Map([
-    ['1h', 890000]
+    ['1h', 1695500]
   ]);
 
-  let {start_date} = loaded;  
+  let { start_date } = loaded;
   const date_to = chart.timeScale().getVisibleRange().to;
 
-  if ((date_to - start_date) < step.get('1h')) {
+  let time_delta = date_to - start_date;
+  if (time_delta < step.get('1h') && loaded.firstLoad) {
+    // firstLoad устанавливаем в false после загрузки без параметра
     await gatKlines();
-    console.log(start_date); 
-   }
+    loaded.fristLoad = false;
+  }
 
 })
-//размер чанков в зависимости от таймфреймов
 
-
-console.log(chunks);
 
