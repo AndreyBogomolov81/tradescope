@@ -42,7 +42,6 @@ def test_view(request):
 
 
 class HistoricalDataView(APIView):
-    request_keys = ['exchange', 'symbol', 'interval', 'category', 'part_data']
 
     def get(self, request: Request):
         '''
@@ -52,11 +51,12 @@ class HistoricalDataView(APIView):
         :return:
         '''
         try:
+            request_keys = ['exchange', 'symbol', 'interval', 'category', 'part_data']
             context = {}
             # получаем параметры запроса
             temp_endpoint_opt = {
                 k: v for k, v in request.GET.items()
-                if k in HistoricalDataView.request_keys
+                if k in request_keys
             }
             # get_bybit_historical_data(
             #     symbol=temp_endpoint_opt.get('symbol')
