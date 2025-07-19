@@ -9,7 +9,7 @@ def get_instrument():
     Функция для получения инструмента для тестирования базы данных
     :return:
     '''
-    with open('./charts/data_instrument_example.json', 'r', encoding='utf-8') as f:
+    with open('../charts/data_instrument_example.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data[0]['result']['list'][0]
 
