@@ -61,6 +61,17 @@ export default {
 
     methods: {
 
+      async getCategories(exchange) {
+        let url = `/api/v1/charts/categories/${exchange}`
+        let response = await fetch(url)
+        let res = await response.json()
+        if (res.result == false) {
+          throw new Error('request error')
+        }
+        this.categories = res.data.categories
+        this.selected_category = res.data.baseCategory
+      },
+
       setEventsForChart() {
         //resize window
         window.addEventListener('resize', () => {
@@ -108,7 +119,8 @@ export default {
         this.selected_category = category
       }
     },    
-    mounted() {
+    async mounted() {
+      await this.getCategories('bybit')
       this.chart = createChart(this.$refs.chart, chartOptions);
       this.candlestickSeries = this.chart.addCandlestickSeries();
       this.candlestickSeries.setData(this.klines);

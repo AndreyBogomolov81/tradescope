@@ -8,7 +8,6 @@ from django.core.files.base import ContentFile
 
 from charts.utils import get_klines, get_cleared_dataset
 
-
 def historical_data_spot_dir_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     return "historical_data_bybit/coin_spot_{0}/{1}".format(
@@ -26,6 +25,19 @@ def historical_data_futures_dir_path(instance, filename):
 
 
 class InstrumentBybit(models.Model):
+    '''
+    Класс описания инструмента торгуемого на Bybit
+    доступные категории:
+        spot: Spot
+        inverse: Inverse Futures
+        linear: Futures
+        option: Option
+    Отдельные параметры по категории в связанных моделях
+    поля используемые из запроса:
+    symbol: symbol;
+    baseCoin: baseCoin;
+    quoteCoin: quoteCoin.
+    '''
     class Meta:
         indexes = [
             models.Index(fields=['symbol', 'baseCoin', 'quoteCoin'])
@@ -43,7 +55,9 @@ class InstrumentBybit(models.Model):
 
     @classmethod
     def _get_cleaned_info_data(cls, elem: dict, fields: list) -> tuple:
-        '''метод для разбиения словаря на два отдельных'''
+        '''
+        метод для разбиения словаря на два отдельных
+        '''
         instr_data = {
             k: v for k, v in elem.items()
             if k in fields
@@ -56,7 +70,7 @@ class InstrumentBybit(models.Model):
         return instr_data, info_data
 
     @classmethod
-    def _create_or_update_bybit_instr(cls, category, query):
+    def _create_or_update_bybit_spot_futures(cls, category, query):
         '''
         Метод обновления данных по споту или фьючерсу
         :param category: spot, linear(futures)
@@ -78,7 +92,6 @@ class InstrumentBybit(models.Model):
                 **instr_data
             )
             info_data.update({'inst': instrument})
-            instrument.availableBybit = True
 
             if category == 'spot':
                 instrument.hasSpot = True
@@ -121,13 +134,19 @@ class InstrumentBybit(models.Model):
             instrument.save()
             if not created:
                 info_data.update({'inst': instrument})
-                InfoBybitOptions.objects.create(**info_data)
+                rec_info = InfoBybitOptions.objects.filter(
+                    symbol=i['symbol']
+                )
+                #проверям наличие опциона если есть то обновляем, если нет то создаем новый
+                if rec_info.exists():
+                    rec_info.update(**info_data)
+                else:
+                    InfoBybitOptions.objects.create(**info_data)
 
     @classmethod
-    def create_or_update_instrument(cls, category: str):
+    def create_or_update_all_instrument(cls, category: str):
         '''
         Метод создания или обновления информации по и=инструментам с указанием биржи
-        :param exchange:
         :param category:
         :return:
         '''
@@ -143,7 +162,7 @@ class InstrumentBybit(models.Model):
                     query=query
                 )
             else:
-                cls._create_or_update_bybit_instr(
+                cls._create_or_update_bybit_spot_futures(
                     category=category,
                     query=query
                 )
@@ -377,8 +396,8 @@ class HistoricalDataByBitSpot(models.Model):
         ]
         ordering = ['start_date']
 
-    start_date = models.IntegerField(unique=True)
-    end_date = models.IntegerField(unique=True)
+    start_date = models.IntegerField()
+    end_date = models.IntegerField()
     interval = models.CharField(max_length=50)
 
     coin = models.ForeignKey(
@@ -403,8 +422,8 @@ class HistoricalDataByBitFutures(models.Model):
         ]
         ordering = ['start_date']
 
-    start_date = models.IntegerField(unique=True)
-    end_date = models.IntegerField(unique=True)
+    start_date = models.IntegerField()
+    end_date = models.IntegerField()
     interval = models.CharField(max_length=50)
 
     coin = models.ForeignKey(

@@ -63,12 +63,12 @@
             <div class="mb-3 d-flex flex-wrap gap-2" id="modal-btn-categories">
 
                   <div v-for="cat in categories" :key="cat">
-                      <button v-if="cat == _current_cat" class="btn btn-selected btn-sm rounded-pill" 
+                      <button v-if="cat.title == _current_cat.title" class="btn btn-selected btn-sm rounded-pill" 
                       @click="handleChangeCategory($event, cat)">
-                          {{ cat }}
+                          {{ cat.description }}
                       </button> 
                       <button v-else class="btn btn-secondary btn-sm rounded-pill"                    
-                      @click="handleChangeCategory($event, cat)">{{ cat }}</button>
+                      @click="handleChangeCategory($event, cat)">{{ cat.description }}</button>
                   </div>              
             </div>
 
@@ -77,7 +77,7 @@
               <!-- длинный список -->
                 <!--Загрузка элементов списка по событию открытия модального окна-->
                 <ul id="modal-instrument-list" class="instrument-list rounded shadow-sm p-2">
-                    <div v-for="instr in instruentList" :key="instr">
+                    <div v-for="instr in instruentFilteredList" :key="instr">
 
                       <li  v-if="instr.selected && instr.isBase"
                           class="instrument-item-selected" style="background: rgba(219, 50, 50, 0.4);">                          
@@ -93,7 +93,7 @@
 
                       <li  v-else
                           class="instrument-item">
-                          <input v-if="_locked" type="checkbox" disabled v-model="instr.selected" @change="handleChecked">
+                          <input v-if="_locked" type="checkbox" disabled v-model="instr.selected">
                           <input v-else type="checkbox" v-model="instr.selected" @change="handleChecked(instr)">
                           <span>{{ instr.title }}</span>
                         </li>
@@ -205,7 +205,7 @@ export default {
       },     
     },
     computed: {
-        instruentList() {
+        instruentFilteredList() {
             return this.instruments.filter(
               i => i.title.toLowerCase().includes(
                 this._inp_value))
