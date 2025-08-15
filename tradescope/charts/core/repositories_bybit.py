@@ -2,12 +2,8 @@ from typing import Optional
 
 from pybit.unified_trading import HTTP
 
-from .base_repositories import BaseRepository
+from .base_repositories import BaseInstrumentRepository
 from ..models import (
-    InstrumentBybitSpot,
-    InstrumentBybitLinear,
-    InstrumentBybitInverse,
-    InstrumentBybitOption,
     InfoBybitSpot,
     InfoBybitLinear,
     InfoBybitInverse,
@@ -16,36 +12,13 @@ from ..models import (
 from .exceptions import InstrumentNotFoundException
 
 
-class InstrumentBybitRepository(BaseRepository):
+class InstrumentBybitRepository(BaseInstrumentRepository):
     """Базовый репозиторий для таблиц InstrumentBybit* с удобными методами."""
     def __init__(self, model, category=None, model_info=None, **kwargs):
-        super().__init__(model, **kwargs)
+        super().__init__(model, model_info=model_info, **kwargs)
         self.category = category
-        self.model_info = model_info
         self.instruments_data = None
 
-    def get_by_symbol(self, symbol: str):
-        return self.get_by(symbol=symbol)
-
-    def exists_symbol(self, symbol: str) -> bool:
-        return self.model.objects.filter(symbol=symbol).exists()
-
-    def split_object_by_fields(
-            self, data: dict, fields: list
-    ) -> tuple[dict, dict]:
-        '''
-        метод для разбиения словаря на два отдельных по
-        '''
-        instr_data = {
-            k: v for k, v in data.items()
-            if k in fields
-        }
-        info_data = {
-            k: v for k, v in data.items()
-            if k not in fields
-        }
-
-        return instr_data, info_data
 
     def get_data_from_exchange(self):
         session = HTTP()
@@ -55,14 +28,14 @@ class InstrumentBybitRepository(BaseRepository):
             return
         raise InstrumentNotFoundException('No data for the given category')
 
-    def create_instrument(self):
+    def create_instruments_by_category(self):
         self.get_data_from_exchange()
         if self.instruments_data:
             for item in self.instruments_data:
                 instr_data, info_data = self.split_object_by_fields(item, ['symbol'])
-                instrument = self.model.objects.create(**instr_data)
+                instrument = self.create_instrument(**instr_data)
                 info_data.update({'inst': instrument})
-                self.model_info.objects.create(**info_data)
+                self.create_info_for_instrument(**info_data)
 
 
 # Можно определить специальные репозитории, если потребуется логика per-model:
