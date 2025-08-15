@@ -18,7 +18,6 @@ class InfoBybitMixin(models.Model):
     quoteCoin = models.CharField(max_length=50)
     status = models.CharField(max_length=50)
 
-    riskParameters = models.JSONField()
     lotSizeFilter = models.JSONField()
     priceFilter = models.JSONField()
 
@@ -71,6 +70,9 @@ class InfoBybitSpot(InfoBybitMixin, models.Model):
     marginTrading = models.CharField(max_length=50)
     stTag = models.CharField(max_length=50)
 
+    riskParameters = models.JSONField()
+
+
     def __str__(self):
         return f'Bybit spot {self.inst.symbol}'
 
@@ -96,6 +98,8 @@ class InfoBybitLinear(
         on_delete=models.CASCADE,
         related_name='linear_bybit'
     )
+
+    riskParameters = models.JSONField()
 
     def __str__(self):
         return f'Bybit linear {self.inst.symbol}'
@@ -123,6 +127,8 @@ class InfoBybitInverse(
         on_delete=models.CASCADE,
         related_name='inverse_bybit'
     )
+
+    riskParameters = models.JSONField()
 
     def __str__(self):
         return f'Bybit inverse {self.inst.symbol}'

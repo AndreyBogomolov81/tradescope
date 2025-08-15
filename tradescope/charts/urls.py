@@ -6,18 +6,13 @@ app_name = 'charts'
 
 urlpatterns = [
     path(
-        'categories/<str:exchange>/',
-        views.CategoriesAPIView.as_view(),
-        name='exchange_categories'
+        'categories-bybit/',
+        views.CategoriesBybitAPIView.as_view(),
+        name='categories_bybit'
     ),
-    # path(
-    #     'api/v1/instrument-symbol-list/<str:exchange>/<str:category>/',
-    #     views.InstrumentSymbolsAPIView.as_view(),
-    #     name='instrument_symbols'
-    # ),
-    # path(
-    #     'api/v1/historical-data/',
-    #     views.HistoricalDataView.as_view(),
-    #     name='historical_data'
-    # ),
+    path(
+        'instruments-bybit/',
+        views.InstrumentBybitAPIView.as_view(),
+        name='instruments_bybit'
+    )
 ]
