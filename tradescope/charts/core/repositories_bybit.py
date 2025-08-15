@@ -14,11 +14,11 @@ from .exceptions import InstrumentNotFoundException
 
 class InstrumentBybitRepository(BaseInstrumentRepository):
     """Базовый репозиторий для таблиц InstrumentBybit* с удобными методами."""
+
     def __init__(self, model, category=None, model_info=None, **kwargs):
         super().__init__(model, model_info=model_info, **kwargs)
         self.category = category
         self.instruments_data = None
-
 
     def get_data_from_exchange(self):
         session = HTTP()
@@ -85,4 +85,3 @@ class OptionBybitInstrumentRepository(InstrumentBybitRepository):
             model_info=self.model_info,
             **kwargs
         )
-

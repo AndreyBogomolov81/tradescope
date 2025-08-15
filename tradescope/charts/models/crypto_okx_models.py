@@ -38,7 +38,7 @@ class HelperOKXMixin:
             result = publicDataAPI.get_instruments(instType=category)
             for item in result['data']:
                 instr_data, info_data = cls._get_cleaned_info_data(item, ['instId'])
-                instrument = cls.objects.create(instId=item['instId'])
+                instrument = cls.objects.create_instrument_by_category(instId=item['instId'])
                 info_data.update({'inst': instrument})
                 info_models[category].objects.create(**info_data)
         else:
@@ -50,7 +50,7 @@ class HelperOKXMixin:
                     print(result['data'])
                     for item in result['data']:
                         instr_data, info_data = cls._get_cleaned_info_data(item, ['instId'])
-                        instrument = cls.objects.create(instId=item['instId'])
+                        instrument = cls.objects.create_instrument_by_category(instId=item['instId'])
                         info_data.update({'inst': instrument})
                         info_models[category].objects.create(**info_data)
 

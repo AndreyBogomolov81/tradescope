@@ -1,5 +1,4 @@
 from django.core.management import BaseCommand
-from pybit.unified_trading import HTTP
 
 class Command(BaseCommand):
     '''
@@ -23,7 +22,7 @@ class Command(BaseCommand):
         try:
             name_model = options['name_model']
             self.stdout.write(f'Модель: {name_model}')
-            facade.create_instrument(name_model)
+            facade.create_instrument_by_category(name_model)
             self.stdout.write(f'Данные внесены')
         except Exception as e:
             error_type = type(e).__name__

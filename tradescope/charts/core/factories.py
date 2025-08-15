@@ -2,7 +2,7 @@ from typing import Type
 
 from django.db import models
 
-from .repositories import (
+from .repositories_bybit import (
     InstrumentBybitRepository,
     SpotBybitInstrumentRepository, LinearBybitInstrumentRepository,
     InverseBybitInstrumentRepository, OptionBybitInstrumentRepository

@@ -3,13 +3,15 @@ from django.db import models
 
 ModelType = Type[models.Model]
 
-class BaseRepository:
+
+class BaseInstrumentRepository:
     '''
-    Базовый репозиторий
+    Базовый репозиторий для инструментов
     '''
 
-    def __init__(self, model: ModelType, **kwargs):
+    def __init__(self, model: ModelType, model_info=None, **kwargs):
         self.model = model
+        self.model_info = model_info
         self.data_from_exchange = None
 
     def list(self, **filters: dict[str, Any]) -> Iterable[models.Model]:
@@ -27,8 +29,11 @@ class BaseRepository:
         except self.model.DoesNotExist as e:
             return None
 
-    def create(self, **data) -> models.Model:
-        return self.objects.create(**data)
+    def create_instrument(self, **instr_data) -> models.Model:
+        return self.model.objects.create(**instr_data)
+
+    def create_info_for_instrument(self, **info_data):
+        return self.model_info.objects.create(**info_data)
 
     def update(self, pk: Any, **data):
         obj = self.get(pk)
@@ -39,3 +44,20 @@ class BaseRepository:
 
     def delete(self, pk: Any):
         self.model.objects.filter(pk=pk).delete()
+
+    def split_object_by_fields(
+            self, data: dict, fields: list
+    ) -> tuple[dict, dict]:
+        '''
+        метод для разбиения словаря на два отдельных по
+        '''
+        instr_data = {
+            k: v for k, v in data.items()
+            if k in fields
+        }
+        info_data = {
+            k: v for k, v in data.items()
+            if k not in fields
+        }
+
+        return instr_data, info_data

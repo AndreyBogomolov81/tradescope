@@ -24,7 +24,7 @@ class DataFacade:
         self.registry.register(name, repo)
 
 
-    def create_instrument(self, name: str):
+    def create_instrument_by_category(self, name: str):
         '''
         функция для внесения данных по торгуемым иснтрументам
         :param name: имя модели: spot_bybit,
@@ -32,34 +32,7 @@ class DataFacade:
         :return:
         '''
         repo = self._get_repo(name)
-        repo.create_instrument()
-
-    def list(self, name: str, **filters):
-        repo = self._get_repo(name)
-        return repo.list(**filters)
-
-    def get(self, name: str, pk):
-        repo = self._get_repo(name)
-        return repo.get(pk)
-
-    def get_by_symbol(self, name: str, symbol: str):
-        repo = self._get_repo(name)
-        if hasattr(repo, "get_by_symbol"):
-            return repo.get_by_symbol(symbol)
-        # fall back
-        return repo.get_by(symbol=symbol)
-
-    def create(self, name: str, **data):
-        repo = self._get_repo(name)
-        return repo.create(**data)
-
-    def update(self, name: str, pk, **data):
-        repo = self._get_repo(name)
-        return repo.update(pk, **data)
-
-    def delete(self, name: str, pk):
-        repo = self._get_repo(name)
-        return repo.delete(pk)
+        repo.create_instruments_by_category()
 
     def _get_repo(self, name: str):
         try:

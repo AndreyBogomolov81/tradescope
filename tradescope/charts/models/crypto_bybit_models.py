@@ -72,7 +72,6 @@ class InfoBybitSpot(InfoBybitMixin, models.Model):
 
     riskParameters = models.JSONField()
 
-
     def __str__(self):
         return f'Bybit spot {self.inst.symbol}'
 
@@ -181,5 +180,3 @@ class CategoryBybit(models.Model):
         ]
         for c in t:
             cls.objects.create(**c)
-
-
