@@ -1,59 +1,5 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-import okx.PublicData as PublicData
-
-
-class HelperOKXMixin:
-    @classmethod
-    def _get_cleaned_info_data(cls, elem: dict, fields: list) -> tuple:
-        '''
-        метод для разбиения словаря на два отдельных
-        '''
-        instr_data = {
-            k: v for k, v in elem.items()
-            if k in fields
-        }
-        info_data = {
-            k: v for k, v in elem.items()
-            if k not in fields
-        }
-
-        return instr_data, info_data
-
-    # TODO: переработать метод по созданию инструментов
-    # TODO: определить метод по обновлению инструментов, выяснить какие параметры нужно обновлять
-    # TODO: реализоавть метод для удаления производных инструментов
-
-    @classmethod
-    def create_instrument(cls, category):
-        info_models = {
-            'SPOT': InfoOKXSpot,
-            'MARGIN': InfoOKXMargin,
-            'SWAP': InfoOKXSwap,
-            'FUTURES': InfoOKXFutures,
-        }
-        flag = '0'
-        publicDataAPI = PublicData.PublicAPI(flag=flag)
-        if category in ('SPOT', 'MARGIN', 'SWAP'):
-            result = publicDataAPI.get_instruments(instType=category)
-            for item in result['data']:
-                instr_data, info_data = cls._get_cleaned_info_data(item, ['instId'])
-                instrument = cls.objects.create_instrument_by_category(instId=item['instId'])
-                info_data.update({'inst': instrument})
-                info_models[category].objects.create(**info_data)
-        else:
-            spot_instr = InstrumentOKXSpot.objects.all()
-            for inst in spot_instr:
-                print(inst.instId)
-                result = publicDataAPI.get_instruments(instType=category, instFamily=inst.instId)
-                if result['data']:
-                    print(result['data'])
-                    for item in result['data']:
-                        instr_data, info_data = cls._get_cleaned_info_data(item, ['instId'])
-                        instrument = cls.objects.create_instrument_by_category(instId=item['instId'])
-                        info_data.update({'inst': instrument})
-                        info_models[category].objects.create(**info_data)
-
 
 
 class InfoOKXMixin(models.Model):
@@ -106,7 +52,7 @@ class InfoOKXMixin(models.Model):
         abstract = True
 
 
-class InstrumentOKXSpot(models.Model, HelperOKXMixin):
+class InstrumentOKXSpot(models.Model):
     indexes = [
         models.Index(fields=['instId'])
     ]
@@ -127,7 +73,7 @@ class InfoOKXSpot(InfoOKXMixin, models.Model):
         return f'OKX spot {self.inst.instId}'
 
 
-class InstrumentOKXMargin(models.Model, HelperOKXMixin):
+class InstrumentOKXMargin(models.Model):
     indexes = [
         models.Index(fields=['instId'])
     ]
@@ -148,7 +94,7 @@ class InfoOKXMargin(InfoOKXMixin, models.Model):
         return f'OKX margin {self.inst.instId}'
 
 
-class InstrumentOKXSwap(models.Model, HelperOKXMixin):
+class InstrumentOKXSwap(models.Model):
     indexes = [
         models.Index(fields=['instId'])
     ]
@@ -169,7 +115,7 @@ class InfoOKXSwap(InfoOKXMixin, models.Model):
         return f'OKX swap {self.inst.instId}'
 
 
-class InstrumentOKXFutures(models.Model, HelperOKXMixin):
+class InstrumentOKXFutures(models.Model):
     indexes = [
         models.Index(fields=['instId'])
     ]

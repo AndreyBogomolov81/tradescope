@@ -11,7 +11,9 @@ class ChartsConfig(AppConfig):
         from .core import repository_factory_for_model
         from .models import (
             InstrumentBybitSpot, InstrumentBybitLinear,
-            InstrumentBybitInverse, InstrumentBybitOption
+            InstrumentBybitInverse, InstrumentBybitOption,
+            InstrumentOKXSpot, InstrumentOKXMargin,
+            InstrumentOKXSwap, InstrumentOKXFutures
         )
 
         # создаем регистратор
@@ -22,6 +24,10 @@ class ChartsConfig(AppConfig):
         facade.register_model('linear_bybit', InstrumentBybitLinear)
         facade.register_model('inverse_bybit', InstrumentBybitInverse)
         facade.register_model('option_bybit', InstrumentBybitOption)
+        facade.register_model('spot_okx', InstrumentOKXSpot)
+        facade.register_model('margin_okx', InstrumentOKXMargin)
+        facade.register_model('swap_okx', InstrumentOKXSwap)
+        facade.register_model('futures_okx', InstrumentOKXFutures)
 
         from . import core as _core_package
         # созданные объекты прикрепляются в виде атрибутов к core

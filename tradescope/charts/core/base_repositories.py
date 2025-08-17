@@ -12,7 +12,6 @@ class BaseInstrumentRepository:
     def __init__(self, model: ModelType, model_info=None, **kwargs):
         self.model = model
         self.model_info = model_info
-        self.data_from_exchange = None
 
     def list(self, **filters: dict[str, Any]) -> Iterable[models.Model]:
         return self.model.objects.filter(**filters)
@@ -45,7 +44,7 @@ class BaseInstrumentRepository:
     def delete(self, pk: Any):
         self.model.objects.filter(pk=pk).delete()
 
-    def split_object_by_fields(
+    def _split_object_by_fields(
             self, data: dict, fields: list
     ) -> tuple[dict, dict]:
         '''

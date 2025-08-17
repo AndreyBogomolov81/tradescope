@@ -14,7 +14,11 @@ class DataFacade:
         self.registry = registry
 
     # при вызове с объекта фасад
-    def register_model(self, name: str, model: Any, repo_factory=None) -> None:
+    def register_model(
+            self, name: str,
+            model: Any,
+            repo_factory=None
+    ) -> None:
         if repo_factory is None:
             # возвращается объект Repository инициализированный сязанной моделью данных
             # функция подменяет переданную модель на связанный repository

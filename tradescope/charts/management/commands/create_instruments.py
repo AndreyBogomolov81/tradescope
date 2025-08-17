@@ -12,7 +12,9 @@ class Command(BaseCommand):
         parser.add_argument(
             '--name-model',
             type=str,
-            help='имя модели: spot_bybit, linear_bybit, inverse_bybit, option_bybit'
+            help='имя модели: '
+                 'spot_bybit, linear_bybit, inverse_bybit, option_bybit, '
+                 'spot_okx, margin_okx, swap_okx, futures_okx'
         )
 
     def handle(self, *args, **options):
