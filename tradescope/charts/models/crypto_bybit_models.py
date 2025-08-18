@@ -173,10 +173,10 @@ class CategoryBybit(models.Model):
     @classmethod
     def create_category(cls):
         t = [
-            {'title': 'spot', 'system_mark': 'spot', 'description': 'Spot'},
-            {'title': 'futures', 'system_mark': 'linear', 'description': 'Futures'},
-            {'title': 'inverse_futures', 'system_mark': 'inverse', 'description': 'Inverse Futures'},
-            {'title': 'option', 'system_mark': 'option', 'description': 'Option'},
+            {'title': 'spot_bybit', 'system_mark': 'spot', 'description': 'Spot'},
+            {'title': 'linear_bybit', 'system_mark': 'linear', 'description': 'Futures'},
+            {'title': 'inverse_bybit', 'system_mark': 'inverse', 'description': 'Inverse Futures'},
+            {'title': 'option_bybit', 'system_mark': 'option', 'description': 'Option'},
         ]
         for c in t:
             cls.objects.create(**c)

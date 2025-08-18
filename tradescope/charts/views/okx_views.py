@@ -4,22 +4,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from charts.exceptions import BadRequestException
-
 from ..models import (
-    CategoryBybit,
-    InstrumentBybitSpot,
-    InstrumentBybitLinear,
-    InstrumentBybitInverse,
-    InstrumentBybitOption
+    CategoryOKX
 )
-from ..serializers import (
-    CategorySerializer,
-    InstrumentBybitSerializer
-)
+from ..serializers import CategorySerializer, InstrumentOKXSerializer
 from ..core import facade
 
 
-class CategoriesBybitAPIView(APIView):
+class CategoriesOKXAPIView(APIView):
     '''
     Представление для работы с символами категорий
     '''
@@ -27,7 +19,7 @@ class CategoriesBybitAPIView(APIView):
     def get(self, request: Request):
 
         try:
-            categories = CategoryBybit.objects.all()
+            categories = CategoryOKX.objects.all()
             serializer = CategorySerializer(categories, many=True)
             context = {
                 'result': True,
@@ -57,8 +49,7 @@ class CategoriesBybitAPIView(APIView):
             )
 
 
-#
-class InstrumentBybitAPIView(APIView):
+class InstrumentOKXAPIView(APIView):
     '''
     Класс представление для выдачи всех занесенных в БД
     инструментов
@@ -66,16 +57,10 @@ class InstrumentBybitAPIView(APIView):
 
     def get(self, request: Request):
         context = {'result': True, 'data': []}
-        categories = CategoryBybit.objects.all()
+        categories = CategoryOKX.objects.all()
         for cat in categories:
             qs = facade.get_all_instruments(cat.title)
-            serializer = InstrumentBybitSerializer(qs, context={'category': cat.system_mark}, many=True)
-            data = serializer.data
-            if cat.title == 'spot_bybit':
-                for i in data:
-                    if i['title'] == 'BTCUSDT':
-                        i['selected'] = i['isBase'] = True
-                        break
-            context['data'].append({cat.description: data})
+            serializer = InstrumentOKXSerializer(qs, context={'category': cat.system_mark}, many=True)
+            context['data'].append({cat.description: serializer.data})
 
         return Response(context)

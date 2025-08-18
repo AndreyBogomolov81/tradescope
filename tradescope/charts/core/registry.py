@@ -1,7 +1,9 @@
-from  typing import Any
+from typing import Any
+
 
 class RegistryError(Exception):
     pass
+
 
 class Registry:
     '''

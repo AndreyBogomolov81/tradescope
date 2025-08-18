@@ -11,8 +11,18 @@ urlpatterns = [
         name='categories_bybit'
     ),
     path(
+        'categories-okx/',
+        views.CategoriesOKXAPIView.as_view(),
+        name='categories_okx'
+    ),
+    path(
         'instruments-bybit/',
         views.InstrumentBybitAPIView.as_view(),
         name='instruments_bybit'
+    ),
+    path(
+        'instruments-okx/',
+        views.InstrumentOKXAPIView.as_view(),
+        name='instruments_okx'
     )
 ]

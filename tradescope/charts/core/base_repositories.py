@@ -28,6 +28,9 @@ class BaseInstrumentRepository:
         except self.model.DoesNotExist as e:
             return None
 
+    def get_all_instruments(self):
+        return self.model.objects.all()
+
     def create_instrument(self, **instr_data) -> models.Model:
         return self.model.objects.create(**instr_data)
 

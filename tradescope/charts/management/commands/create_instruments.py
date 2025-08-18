@@ -1,12 +1,12 @@
 from django.core.management import BaseCommand
 
+
 class Command(BaseCommand):
     '''
     Команда создания инструментов при инициализации приложения
     ключи для категорий:
     '''
-    help = 'Команда для инициализации данными об инструментах с ByBit'
-
+    help = 'Команда для инициализации данными об инструментах'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -32,4 +32,3 @@ class Command(BaseCommand):
             self.stderr.write(
                 f'Команда выполнена с ошибкой {error_type}: {error_message}'
             )
-

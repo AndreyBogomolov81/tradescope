@@ -148,12 +148,10 @@ class CategoryOKX(models.Model):
     @classmethod
     def create_category(cls):
         t = [
-            {'title': 'spot', 'system_mark': 'SPOT', 'description': 'Spot'},
-            {'title': 'futures', 'system_mark': 'FUTURES', 'description': 'Futures'},
-            {'title': 'inverse_futures', 'system_mark': 'FUTURES', 'description': 'Inverse Futures'},
-            {'title': 'margin', 'system_mark': 'MARGIN', 'description': 'Margin'},
-            {'title': 'option', 'system_mark': 'OPTION', 'description': 'Option'},
-            {'title': 'swap', 'system_mark': 'SWAP', 'description': 'Swap'},
+            {'title': 'spot_okx', 'system_mark': 'SPOT', 'description': 'Spot'},
+            {'title': 'futures_okx', 'system_mark': 'FUTURES', 'description': 'Futures'},
+            {'title': 'margin_okx', 'system_mark': 'MARGIN', 'description': 'Margin'},
+            {'title': 'swap_okx', 'system_mark': 'SWAP', 'description': 'Swap'},
         ]
         for c in t:
             cls.objects.create(**c)

@@ -3,8 +3,10 @@ from typing import Any
 from .registry import Registry, RegistryError
 from .factories import repository_factory_for_model
 
+
 class DataFacadeError(Exception):
     pass
+
 
 class DataFacade:
     """Фасад — единый API для всех зарегистрированных репозиториев."""
@@ -27,7 +29,6 @@ class DataFacade:
             repo = repo_factory(model)
         self.registry.register(name, repo)
 
-
     def create_instrument_by_category(self, name: str):
         '''
         функция для внесения данных по торгуемым иснтрументам
@@ -37,6 +38,10 @@ class DataFacade:
         '''
         repo = self._get_repo(name)
         repo.create_instruments_by_category()
+
+    def get_all_instruments(self, name: str):
+        repo = self._get_repo(name)
+        return repo.get_all_instruments()
 
     def _get_repo(self, name: str):
         try:
