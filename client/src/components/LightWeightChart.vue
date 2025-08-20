@@ -26,6 +26,7 @@ import {
 
 import Navbar from './Navbar.vue';
 import InstrumentsModal from './InstrumentsModal.vue';
+import { wsService } from '@/services/ws-service';
 
 export default {
     name: 'chart',
@@ -50,12 +51,35 @@ export default {
         categories_bybit: null,
         categories_okx: null,
         instruments_bybit: null,
-        instruments_okx: null,       
+        instruments_okx: null,
+        
+        //webockets
+        messages: [],
+        topic: 'tickers.BTCUSDT',
+        subscribed: false,
+        _onMsg: null,
       }
     },
 
     methods: {
-
+      formatMsg(m) {
+        try {
+          return JSON.stringify(m);
+        } catch (error) {
+          return String(m);          
+        }
+      },
+      toggleSubscribe() {
+        if (this.subscribed) {
+          wsService.unSubscribeTopic 
+          ? wsService.unSubscribeTopic(this.topic) : wsService.unSubscribe(this.topic);
+          this.subscribed = false
+        } else {
+          wsService.subscribeTopic 
+          ? wsService.subscribeTopic(this.topic) : wsService.subscribe(this.topic);
+          this.subscribed = true
+        }
+      },
       async loadData(url) {
         const response = await fetch(url);
         if (!response.ok) throw new Error(res.status);
@@ -111,8 +135,33 @@ export default {
           console.log(v)
         }
       }
-    },    
+    },
+    created() {
+      this._onMsg = (msg) => {
+        // покажем в консоли каждое сообщение, которое дошло до компонента
+        console.log('[LightWeightChart] onMsg:', msg);
+
+        if (msg.topic && msg.topic !== this.topic) return;
+        this.messages.unshift(msg);
+        if (this.messages.length > 200) this.messages.pop();
+      };
+        // регистрируем слушатель
+      if (wsService && wsService.addListener) {
+        wsService.addListener(this._onMsg);
+      } else {
+        console.warn('wsService.addListener not found');
+      }
+    },   
+
     async mounted() {
+      console.log('WS instance before connect:', wsService.ws);
+      if (!wsService.ws) {
+        wsService.connect();
+        console.log('wsService.connect() called');
+      }
+      // подписка
+      wsService.subscribe ? wsService.subscribe(this.topic) : wsService.subscribeTopic(this.topic);
+      console.log('subscribe requested for', this.topic);
       //загрузка данных с сервера
       this.categories_bybit = await this.loadData(
         `/api/v1/charts/categories-bybit/`
@@ -141,6 +190,15 @@ export default {
 
       this.setEventsForChart()
       this.setLegend()      
+    },
+
+    beforeUnmount() {
+      if (this._onMsg) wsService.removeListener(this._onMsg);
+      // по желанию отписаться от топика:
+      if (this.subscribed) {
+        wsService.unSubscribeTopic 
+        ? wsService.unSubscribeTopic(this.topic) : wsService.unSubscribe(this.topic);
+      }
     },
   //добавить метод unmounted()
 

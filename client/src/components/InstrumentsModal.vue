@@ -227,9 +227,11 @@ export default {
         if (data.value == 'Bybit') {
           //если при смене radio значение bybit то для текущего значения принимае
           this._current_categories = [...this.categories_bybit]
+
           this._current_category = [...this.categories_bybit].find(
             i => i.title == 'spot_bybit'
           )
+
           this._current_instruments_list = [...this.instruments_bybit].find(
             i => i.category == 'Spot'
           )['instruments']
@@ -237,9 +239,11 @@ export default {
         } else if (data.value == 'OKX') {  
 
           this._current_categories = [...this.categories_okx]
+
           this._current_category = [...this.categories_okx].find(
             i => i.title == 'spot_okx'
           )
+          
           this._current_instruments_list = [...this.instruments_okx].find(
             i => i.category == 'Spot'
           )['instruments']
