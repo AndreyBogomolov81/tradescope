@@ -6,9 +6,11 @@
 
   <teleport to="#modals">
     <InstrumentsModal 
-        :instruments="crypto_instruments" 
-        :categories="categories" 
-        @category_changed="handleChangeCat"/>
+        :categories_bybit="categories_bybit"
+        :categories_okx="categories_okx"
+        :instruments_bybit="instruments_bybit"
+        :instruments_okx="instruments_okx"
+        @change_selected_instr="handleChangeSelectedInstr"/>
 </teleport> 
 </template>
 
@@ -38,38 +40,27 @@ export default {
 
     data() {
       return {
+        //для настройки графика
         chart: null,
         chart_width: 1,
         chart_height: 0.95,
         candlestickSeries: null,
         klines: klines,
-        categories: ['Спот', 'Фьючерсы', 'Опционы'],
-        selected_category: 'Спот',        
-
-        crypto_instruments: [
-          {title: 'BTCUSDT', selected: true, exchange: 'Bybit', category: 'Спот', isBase: true, data: null},
-          {title: 'EHTUSDT', selected: false, exchange: 'Bybit', category: 'Спот', isBase: false, data: null},
-          {title: 'SALANAUSDT', selected: false, exchange: 'Bybit', category: 'Спот', isBase: false, data: null},
-          {title: 'XRPUSDT', selected: false, exchange: 'Bybit', category: 'Спот', isBase: false, data: null},
-          {title: 'FDRUSDT', selected: false, exchange: 'Bybit', category: 'Спот', isBase: false, data: null},
-          {title: 'BTCUSDT', selected: false, exchange: 'Bybit', category: 'Спот', isBase: false, data: null},
-          {title: 'BTCAUSDT', selected: false, exchange: 'Bybit', category: 'Спот', isBase: false, data: null},
-          {title: 'FGTCUSDT', selected: false, exchange: 'Bybit', category: 'Спот', isBase: false, data: null},
-        ]
+        //для передачи в модальное 
+        categories_bybit: null,
+        categories_okx: null,
+        instruments_bybit: null,
+        instruments_okx: null,       
       }
     },
 
     methods: {
 
-      async getCategories(exchange) {
-        let url = `/api/v1/charts/categories/${exchange}`
-        let response = await fetch(url)
-        let res = await response.json()
-        if (res.result == false) {
-          throw new Error('request error')
-        }
-        this.categories = res.data.categories
-        this.selected_category = res.data.baseCategory
+      async loadData(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(res.status);
+        const result = await response.json();
+        return result.data
       },
 
       setEventsForChart() {
@@ -114,13 +105,28 @@ export default {
         });
       },
 
-      handleChangeCat(category) {
+      handleChangeSelectedInstr(data) {
         //обработка события смены категории в модальном окне
-        this.selected_category = category
+        for (let v of data) {
+          console.log(v)
+        }
       }
     },    
     async mounted() {
-      await this.getCategories('bybit')
+      //загрузка данных с сервера
+      this.categories_bybit = await this.loadData(
+        `/api/v1/charts/categories-bybit/`
+      )
+      this.categories_okx = await this.loadData(
+        `/api/v1/charts/categories-okx/`
+      )
+      this.instruments_bybit = await this.loadData(
+        '/api/v1/charts/instruments-bybit/'
+      )
+      this.instruments_okx = await this.loadData(
+        '/api/v1/charts/instruments-okx/'
+      )
+
       this.chart = createChart(this.$refs.chart, chartOptions);
       this.candlestickSeries = this.chart.addCandlestickSeries();
       this.candlestickSeries.setData(this.klines);

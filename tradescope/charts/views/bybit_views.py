@@ -69,13 +69,24 @@ class InstrumentBybitAPIView(APIView):
         categories = CategoryBybit.objects.all()
         for cat in categories:
             qs = facade.get_all_instruments(cat.title)
-            serializer = InstrumentBybitSerializer(qs, context={'category': cat.system_mark}, many=True)
+            serializer = InstrumentBybitSerializer(
+                qs,
+                context={
+                    'category': cat.description,
+                    'exchange': 'Bybit'
+                }, many=True
+            )
             data = serializer.data
             if cat.title == 'spot_bybit':
                 for i in data:
                     if i['title'] == 'BTCUSDT':
                         i['selected'] = i['isBase'] = True
                         break
-            context['data'].append({cat.description: data})
+            context['data'].append(
+                {
+                    'category': cat.description,
+                    'instruments': data
+                }
+            )
 
         return Response(context)

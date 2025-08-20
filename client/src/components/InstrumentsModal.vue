@@ -22,8 +22,9 @@
               type="radio"
               :id="exch.id"
               :value="exch.value"
-              v-model="_selectedOpt"
+              v-model="_selectedExch"
               name="options"
+              @change="handleChangeRadio(exch)"
             >
             <label class="form-check-label" :for="exch.id">
               {{ exch.label }}
@@ -62,8 +63,8 @@
           <!--Необходимо запросить при открытии диалогового окна по значению которое находится в категории биржи-->
             <div class="mb-3 d-flex flex-wrap gap-2" id="modal-btn-categories">
 
-                  <div v-for="cat in categories" :key="cat">
-                      <button v-if="cat.title == _current_cat.title" class="btn btn-selected btn-sm rounded-pill" 
+                  <div v-for="cat in _current_categories" :key="cat">
+                      <button v-if="cat.title == _current_category.title" class="btn btn-selected btn-sm rounded-pill" 
                       @click="handleChangeCategory($event, cat)">
                           {{ cat.description }}
                       </button> 
@@ -115,7 +116,11 @@
             </small>
           </div>
           <div>
-            <button class="btn btn-primary">Apply</button>
+            <button class="btn btn-primary"
+                    data-bs-dismiss="modal"
+                    @click="handleApply">
+              Apply
+            </button>
           </div>
         </div>
       </div>
@@ -126,46 +131,141 @@
 <script>
 export default {
     props: [
-        'categories',
-        'instruments',
+        'categories_bybit',
+        'categories_okx',
+        'instruments_bybit',
+        'instruments_okx'
     ],
-    data() {
-      let _base_instrument = this.instruments.filter(i => i.isBase).at(0)
-      
-      let {
-        exchange: _current_exchange, 
-        category: _current_cat     
-      } = _base_instrument
 
-      let selected_instr = this.instruments.filter(i => i.selected)
-      let _countSelected = (this.instruments.filter(i => i.selected)).length
+    data() {
 
       return {
         _inp_value: '',
         _num_available_instr: 5,
         _locked: false,
+
         _exchanges: [
           { id: 1, value: 'Bybit', label: 'Bybit' },
           { id: 2, value: 'OKX', label: 'OKX' },
         ],
-        _selectedOpt: 'Bybit',
-        _countSelected,
-        _base_instrument,
-        _current_exchange,
-        _current_cat,
-        selected_instr
+        _selectedExch: 'Bybit',
+
+        _countSelected: 0,
+        _base_instrument: null,
+
+        _current_categories: Array.isArray(this.categories_bybit) 
+          ? [...this.categories_bybit] : [],
+
+        // категория по умолчанию {title: 'spot_bybit', system_mark: 'spot', descritpion: 'Spot'}
+        _current_category: Array.isArray(this.categories_bybit) 
+          ? [...this.categories_bybit]
+          .find(i => i.title == 'spot_bybit') : null,       
+
+        _current_instruments_list: Array.isArray(this.instruments_bybit) 
+          ? [...this.instruments_bybit]
+          .find(i => i.category == 'Spot')['instruments'] : [],
+        
+        selected_instr: Array.isArray(this.instruments_bybit) 
+          ? this.instruments_bybit.map(i => i.instruments)
+          .flat().filter(i => i.selected) : []
       }        
     },
+
+    watch: {
+
+      categories_bybit: {
+        handler(newVal) {
+          this._current_category = Array.isArray(newVal) 
+            ? [...newVal].find(i => i.title == 'spot_bybit'): null
+
+          this._current_categories = Array.isArray(newVal)
+            ? [...newVal] : []
+          
+        }
+      },
+
+      instruments_bybit: {
+        handler(newVal) {
+          this._current_instruments_list = Array.isArray(newVal) 
+            ? [...newVal].find(i => i.category == 'Spot')['instruments'] : []
+            
+          this._base_instrument = Array.isArray(newVal) 
+            ? [...newVal].find(i => i.category == 'Spot')['instruments']
+            .find(i => i.isBase) : null
+
+
+          this.selected_instr = Array.isArray(newVal) 
+            ? [...newVal].map(
+              i => i.instruments              
+            ).flat().filter(i => i.selected) : []
+
+          this._countSelected = Array.isArray(newVal) 
+            ? [...newVal].map(
+              i => i.instruments              
+            ).flat().filter(i => i.selected).length : 0
+        }
+      },      
+    },
+
     methods: {
+
+      joinInstruments() {
+        //функция для объединения массивов
+        if (Array.isArray(this.instruments_bybit) && Array.isArray(this.instruments_okx)) {
+          const temp = [...this.instruments_bybit, ...this.instruments_okx]
+          const res = []
+          for (let i of temp) {
+            if (Array.isArray(i.instruments)) {
+              res.push(...i.instruments)
+            }
+          }
+          return res
+        }
+      },
+
+      handleChangeRadio(data) {
+        if (data.value == 'Bybit') {
+          //если при смене radio значение bybit то для текущего значения принимае
+          this._current_categories = [...this.categories_bybit]
+          this._current_category = [...this.categories_bybit].find(
+            i => i.title == 'spot_bybit'
+          )
+          this._current_instruments_list = [...this.instruments_bybit].find(
+            i => i.category == 'Spot'
+          )['instruments']
+
+        } else if (data.value == 'OKX') {  
+
+          this._current_categories = [...this.categories_okx]
+          this._current_category = [...this.categories_okx].find(
+            i => i.title == 'spot_okx'
+          )
+          this._current_instruments_list = [...this.instruments_okx].find(
+            i => i.category == 'Spot'
+          )['instruments']
+        }
+      },
+
       handleChangeCategory(event, cat) {
           //пробросить событие наверх
-          this._current_cat = cat
-          this.$emit('category_changed', cat)
+          this._current_category = cat
+          if (this._selectedExch == 'Bybit') {
+            this._current_instruments_list = [...this.instruments_bybit].find(
+            i => i.category == cat.description
+          )['instruments']
+
+          } else if (this._selectedExch == 'OKX') {
+            this._current_instruments_list = [...this.instruments_okx].find(
+            i => i.category == cat.description
+          )['instruments']
+          }          
       },
 
       handleChecked(instr) {
+        //создаем общйи список для инструментов
         //блокируем при превышении выбранного лимита
-        this._countSelected = (this.instruments.filter(i => i.selected)).length
+        let instruments = this.joinInstruments()
+        this._countSelected = instruments.filter(i => i.selected).length
         this._locked = this._countSelected < this._num_available_instr 
           ? false : true
 
@@ -202,11 +302,15 @@ export default {
             this._base_instrument = newBaseinst
           }
         }
-      },     
+      }, 
+      handleApply() {
+        this.$emit('change_selected_instr', this.selected_instr)
+      },    
     },
+    
     computed: {
         instruentFilteredList() {
-            return this.instruments.filter(
+            return this._current_instruments_list.filter(
               i => i.title.toLowerCase().includes(
                 this._inp_value))
         },        

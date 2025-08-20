@@ -60,7 +60,19 @@ class InstrumentOKXAPIView(APIView):
         categories = CategoryOKX.objects.all()
         for cat in categories:
             qs = facade.get_all_instruments(cat.title)
-            serializer = InstrumentOKXSerializer(qs, context={'category': cat.system_mark}, many=True)
-            context['data'].append({cat.description: serializer.data})
+            serializer = InstrumentOKXSerializer(
+                qs,
+                context={
+                    'category': cat.description,
+                    'exchange': 'OKX'
+                }, many=True
+            )
+
+            context['data'].append(
+                {
+                    'category': cat.description,
+                    'instruments': serializer.data
+                }
+            )
 
         return Response(context)
