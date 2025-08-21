@@ -58,7 +58,6 @@ def get_intervals_for_klines_query(start_date, end_date, interval=15) -> List[di
                     'limit': count - 1
                 }
             )
-
     return ls
 
 
@@ -75,7 +74,8 @@ async def get_klines(symbol, category, start_date, end_date, interval='15'):
 
     intervals = get_intervals_for_klines_query(
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        interval=int(interval)
     )
 
     # Создаем сессию один раз

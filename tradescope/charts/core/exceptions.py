@@ -1,0 +1,2 @@
+class InstrumentNotFoundException(BaseException):
+    pass

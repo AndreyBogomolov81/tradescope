@@ -5,7 +5,7 @@ from django.core.management import BaseCommand
 from django.core.files.base import ContentFile
 
 from charts.utils import get_klines, get_cleared_dataset
-from charts.models import InstrumentByBitLinear, HistoricalDataByBitLinear
+from charts.models import InstrumentByBitLinear, HistoricalDataByBitLinear, InstrumentBybit
 
 
 class Command(BaseCommand):

@@ -5,20 +5,24 @@ from . import views
 app_name = 'charts'
 
 urlpatterns = [
-    path('', views.test_view),
     path(
-        'api/v1/categories/<str:exchange>/',
-        views.CategoriesAPIView.as_view(),
-        name='exchange_categories'
+        'categories-bybit/',
+        views.CategoriesBybitAPIView.as_view(),
+        name='categories_bybit'
     ),
     path(
-        'api/v1/instrument-symbol-list/<str:exchange>/<str:category>/',
-        views.InstrumentSymbolsAPIView.as_view(),
-        name='instrument_symbols'
+        'categories-okx/',
+        views.CategoriesOKXAPIView.as_view(),
+        name='categories_okx'
     ),
     path(
-        'api/v1/historical-data/',
-        views.HistoricalDataView.as_view(),
-        name='historical_data'
+        'instruments-bybit/',
+        views.InstrumentBybitAPIView.as_view(),
+        name='instruments_bybit'
     ),
+    path(
+        'instruments-okx/',
+        views.InstrumentOKXAPIView.as_view(),
+        name='instruments_okx'
+    )
 ]

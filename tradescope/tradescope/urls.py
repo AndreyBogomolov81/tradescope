@@ -22,7 +22,7 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('charts/', include('charts.urls', namespace='charts')),
+    path('api/v1/charts/', include('charts.urls', namespace='charts')),
 ]
 
 if settings.DEBUG:
