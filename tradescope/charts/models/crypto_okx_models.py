@@ -53,9 +53,10 @@ class InfoOKXMixin(models.Model):
 
 
 class InstrumentOKXSpot(models.Model):
-    indexes = [
-        models.Index(fields=['instId'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['instId'])
+        ]
     instId = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -74,9 +75,10 @@ class InfoOKXSpot(InfoOKXMixin, models.Model):
 
 
 class InstrumentOKXMargin(models.Model):
-    indexes = [
-        models.Index(fields=['instId'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['instId'])
+        ]
     instId = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -95,9 +97,10 @@ class InfoOKXMargin(InfoOKXMixin, models.Model):
 
 
 class InstrumentOKXSwap(models.Model):
-    indexes = [
-        models.Index(fields=['instId'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['instId'])
+        ]
     instId = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -116,9 +119,10 @@ class InfoOKXSwap(InfoOKXMixin, models.Model):
 
 
 class InstrumentOKXFutures(models.Model):
-    indexes = [
-        models.Index(fields=['instId'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['instId'])
+        ]
     instId = models.CharField(max_length=50, unique=True)
 
     def __str__(self):

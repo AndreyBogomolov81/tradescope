@@ -54,6 +54,7 @@ export default {
         instruments_okx: null,
         
         //webockets
+        ws: null,
         messages: [],
         topic: 'tickers.BTCUSDT',
         subscribed: false,
@@ -70,15 +71,15 @@ export default {
         }
       },
       toggleSubscribe() {
-        if (this.subscribed) {
-          wsService.unSubscribeTopic 
-          ? wsService.unSubscribeTopic(this.topic) : wsService.unSubscribe(this.topic);
-          this.subscribed = false
-        } else {
-          wsService.subscribeTopic 
-          ? wsService.subscribeTopic(this.topic) : wsService.subscribe(this.topic);
-          this.subscribed = true
-        }
+        // if (this.subscribed) {
+        //   wsService.unSubscribeTopic 
+        //   ? wsService.unSubscribeTopic(this.topic) : wsService.unSubscribe(this.topic);
+        //   this.subscribed = false
+        // } else {
+        //   wsService.subscribeTopic 
+        //   ? wsService.subscribeTopic(this.topic) : wsService.subscribe(this.topic);
+        //   this.subscribed = true
+        // }
       },
       async loadData(url) {
         const response = await fetch(url);
@@ -137,31 +138,43 @@ export default {
       }
     },
     created() {
-      this._onMsg = (msg) => {
-        // покажем в консоли каждое сообщение, которое дошло до компонента
-        console.log('[LightWeightChart] onMsg:', msg);
+      // this._onMsg = (msg) => {
+      //   // покажем в консоли каждое сообщение, которое дошло до компонента
+      //   console.log('[LightWeightChart] onMsg:', msg);
 
-        if (msg.topic && msg.topic !== this.topic) return;
-        this.messages.unshift(msg);
-        if (this.messages.length > 200) this.messages.pop();
-      };
-        // регистрируем слушатель
-      if (wsService && wsService.addListener) {
-        wsService.addListener(this._onMsg);
-      } else {
-        console.warn('wsService.addListener not found');
-      }
+      //   if (msg.topic && msg.topic !== this.topic) return;
+      //   this.messages.unshift(msg);
+      //   if (this.messages.length > 200) this.messages.pop();
+      // };
+      //   // регистрируем слушатель
+      // if (wsService && wsService.addListener) {
+      //   wsService.addListener(this._onMsg);
+      // } else {
+      //   console.warn('wsService.addListener not found');
+      // }
     },   
 
     async mounted() {
-      console.log('WS instance before connect:', wsService.ws);
-      if (!wsService.ws) {
-        wsService.connect();
-        console.log('wsService.connect() called');
-      }
-      // подписка
-      wsService.subscribe ? wsService.subscribe(this.topic) : wsService.subscribeTopic(this.topic);
-      console.log('subscribe requested for', this.topic);
+      this.ws = new WebSocket('ws://localhost:8000/ws/proxy/')
+      this.ws.onopen = () => console.log('connected to django-channels proxy')
+      this.ws.onmessage = (evt) => {
+        try {
+          const msg = JSON.parse(evt.data);
+          console.log('msg from server:', msg);
+        } catch (e) {
+          console.log('raw', evt.data);
+        }
+      };
+      this.ws.onClose = () => console.log('closed')
+      this.ws.onerror = (e) => console.log('ws error', e)
+      // console.log('WS instance before connect:', wsService.ws);
+      // if (!wsService.ws) {
+      //   wsService.connect();
+      //   console.log('wsService.connect() called');
+      // }
+      // // подписка
+      // wsService.subscribe ? wsService.subscribe(this.topic) : wsService.subscribeTopic(this.topic);
+      // console.log('subscribe requested for', this.topic);
       //загрузка данных с сервера
       this.categories_bybit = await this.loadData(
         `/api/v1/charts/categories-bybit/`
@@ -193,12 +206,13 @@ export default {
     },
 
     beforeUnmount() {
-      if (this._onMsg) wsService.removeListener(this._onMsg);
-      // по желанию отписаться от топика:
-      if (this.subscribed) {
-        wsService.unSubscribeTopic 
-        ? wsService.unSubscribeTopic(this.topic) : wsService.unSubscribe(this.topic);
-      }
+      if (this.ws) this.ws.close();
+      // if (this._onMsg) wsService.removeListener(this._onMsg);
+      // // по желанию отписаться от топика:
+      // if (this.subscribed) {
+      //   wsService.unSubscribeTopic 
+      //   ? wsService.unSubscribeTopic(this.topic) : wsService.unSubscribe(this.topic);
+      // }
     },
   //добавить метод unmounted()
 
