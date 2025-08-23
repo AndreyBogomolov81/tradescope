@@ -51,9 +51,10 @@ class InfoBybitFuturesMixin(models.Model):
 
 
 class InstrumentBybitSpot(models.Model):
-    indexes = [
-        models.Index(fields=['symbol'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['symbol'])
+        ]
     symbol = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -77,9 +78,10 @@ class InfoBybitSpot(InfoBybitMixin, models.Model):
 
 
 class InstrumentBybitLinear(models.Model):
-    indexes = [
-        models.Index(fields=['symbol'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['symbol'])
+        ]
     symbol = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -105,9 +107,10 @@ class InfoBybitLinear(
 
 
 class InstrumentBybitInverse(models.Model):
-    indexes = [
-        models.Index(fields=['symbol'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['symbol'])
+        ]
 
     symbol = models.CharField(max_length=50, unique=True)
 
@@ -134,9 +137,10 @@ class InfoBybitInverse(
 
 
 class InstrumentBybitOption(models.Model):
-    indexes = [
-        models.Index(fields=['symbol'])
-    ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['symbol'])
+        ]
 
     symbol = models.CharField(max_length=50, unique=True)
 
@@ -180,3 +184,16 @@ class CategoryBybit(models.Model):
         ]
         for c in t:
             cls.objects.create(**c)
+
+#TODO: сделать модели для хранения исторических данных по инструментам для каждой категории и для каждого таймфрейма
+class BaseHistoricalDataBybit(models.Model):
+    class Meta:
+        abstract = True
+
+    startTime = models.IntegerField()
+    openPrice = models.FloatField()
+    highPrice = models.FloatField()
+    lowPrice = models.FloatField()
+    closePrice = models.FloatField()
+    volume = models.FloatField()
+    turnover = models.FloatField()
