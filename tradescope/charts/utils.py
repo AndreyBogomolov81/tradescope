@@ -66,33 +66,45 @@ async def fetch(session, url):
         return await response.json()  # или response.text(), в зависимости от формата данных
 
 
-async def get_klines(symbol, category, start_date, end_date, interval='15'):
-    url = ('https://api.bybit.com/v5/market/kline'
-           '?category={category}&symbol={symbol}&interval={interval}'
-           '&start={start}&end={end}&limit={limit}')
-    tasks = []
-
-    intervals = get_intervals_for_klines_query(
-        start_date=start_date,
-        end_date=end_date,
-        interval=int(interval)
-    )
+async def get_klines(symbol, category, start_date=None, end_date=None, interval='15'):
 
     # Создаем сессию один раз
     async with aiohttp.ClientSession() as session:
-        # Запускаем несколько задач
-        for t in intervals:  # замените на нужное число
-            tasks.append(fetch(session, url.format(
+        if start_date and end_date:
+            url = ('https://api.bybit.com/v5/market/kline'
+                   '?category={category}&symbol={symbol}&interval={interval}'
+                   '&start={start}&end={end}&limit={limit}')
+            tasks = []
+            intervals = get_intervals_for_klines_query(
+                start_date=start_date,
+                end_date=end_date,
+                interval=int(interval)
+            )
+            # Запускаем несколько задач
+            for t in intervals:  # замените на нужное число
+                tasks.append(fetch(session, url.format(
+                    category=category,
+                    symbol=symbol,
+                    interval=interval,
+                    limit=t['limit'],
+                    start=str(t['start'] * 1000),
+                    end=str(t['end'] * 1000)
+                )))
+
+            # Выполняем все запросы параллельно и собираем результаты
+            results = await asyncio.gather(*tasks)
+
+        else:
+            url = ('https://api.bybit.com/v5/market/kline'
+                   '?category={category}&symbol={symbol}&interval={interval}'
+                  '&limit={limit}')
+            task = asyncio.create_task(fetch(session, url.format(
                 category=category,
                 symbol=symbol,
                 interval=interval,
-                limit=t['limit'],
-                start=str(t['start'] * 1000),
-                end=str(t['end'] * 1000)
+                limit=1000
             )))
-
-        # Выполняем все запросы параллельно и собираем результаты
-        results = await asyncio.gather(*tasks)
+            results = [await task]
 
     # results — список результатов каждого запроса
 

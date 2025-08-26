@@ -6,8 +6,6 @@ from pybit.exceptions import InvalidRequestError
 from pybit.unified_trading import HTTP
 from django.core.files.base import ContentFile
 
-from charts.utils import get_klines, get_cleared_dataset
-
 
 # TODO: переписать модели с использованием подхода наследования
 class InfoBybitMixin(models.Model):
@@ -55,6 +53,7 @@ class InstrumentBybitSpot(models.Model):
         indexes = [
             models.Index(fields=['symbol'])
         ]
+
     symbol = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -82,6 +81,7 @@ class InstrumentBybitLinear(models.Model):
         indexes = [
             models.Index(fields=['symbol'])
         ]
+
     symbol = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -185,15 +185,77 @@ class CategoryBybit(models.Model):
         for c in t:
             cls.objects.create(**c)
 
-#TODO: сделать модели для хранения исторических данных по инструментам для каждой категории и для каждого таймфрейма
+
+# TODO: сделать модели для хранения исторических данных по инструментам для каждой категории и для каждого таймфрейма
 class BaseHistoricalDataBybit(models.Model):
     class Meta:
         abstract = True
 
-    startTime = models.IntegerField()
+    startTime = models.FloatField()
     openPrice = models.FloatField()
     highPrice = models.FloatField()
     lowPrice = models.FloatField()
     closePrice = models.FloatField()
     volume = models.FloatField()
     turnover = models.FloatField()
+    interval = models.CharField(max_length=10)
+
+
+class HistoricalDataBybitSpot(
+    BaseHistoricalDataBybit,
+    models.Model
+):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['startTime', 'inst', 'interval'], name='unique_spot_startTime_inst_interval')
+        ]
+        indexes = [
+            models.Index(fields=['startTime'])
+        ]
+        ordering = ['startTime']
+
+    inst = models.ForeignKey(
+        InstrumentBybitSpot,
+        on_delete=models.CASCADE,
+        related_name='historical_spot_bybit'
+    )
+
+
+class HistoricalDataBybitLinear(
+    BaseHistoricalDataBybit,
+    models.Model
+):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['startTime', 'inst', 'interval'], name='unique_linear_startTime_inst_interval')
+        ]
+        indexes = [
+            models.Index(fields=['startTime'])
+        ]
+        ordering = ['startTime']
+
+    inst = models.ForeignKey(
+        InstrumentBybitLinear,
+        on_delete=models.CASCADE,
+        related_name='historical_linear_bybit'
+    )
+
+
+class HistoricalDataBybitInverse(
+    BaseHistoricalDataBybit,
+    models.Model
+):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['startTime', 'inst', 'interval'], name='unique_inverse_startTime_inst_interval')
+        ]
+        indexes = [
+            models.Index(fields=['startTime'])
+        ]
+        ordering = ['startTime']
+
+    inst = models.ForeignKey(
+        InstrumentBybitInverse,
+        on_delete=models.CASCADE,
+        related_name='historical_inverse_bybit'
+    )
