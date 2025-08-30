@@ -40,24 +40,17 @@ class DataFacade:
         repo = self._get_repo(name)
         return repo.get_all_instruments()
 
-    async def create_or_update_historical_data(self, name, **options):
-        """
-        Функция для добавления исторических данных в БД
-        :param name:
-        :return:
-        """
-        repo = self._get_repo(name)
-        options.update({"category": repo.category})
-        return await repo.get_candles_from_exchange(**options)
 
-    def download_hist_data(self, name, symbol, interval, array):
-        repo = self._get_repo(name)
-        return repo.download_hist_data(symbol, interval, array)
 
-    def get_candles_from_exchange(self, name, **options):
+    # РАБОТАЕМ С ЭТОЙ ФУНКЦИЕЙ
+    def create_or_update_hist_data(self, name, symbol, start_date, end_date):
         repo = self._get_repo(name)
-        options.update({"category": repo.category})
-        return asyncio.run(repo.get_candles_from_exchange(**options))
+        return repo.create_or_update_hist_data(symbol, start_date, end_date)
+
+
+    def get_by_symbol(self, name, symbol: str):
+        repo = self._get_repo(name)
+        return repo.get_by_symbol(symbol=symbol)
 
     def _get_repo(self, name: str):
         try:

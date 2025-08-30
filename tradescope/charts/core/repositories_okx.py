@@ -3,6 +3,7 @@ import okx.PublicData as PublicData
 from ..models import InfoOKXFutures, InfoOKXMargin, InfoOKXSpot, InfoOKXSwap
 from .base_repositories import BaseInstrumentRepository
 from .exceptions import InstrumentNotFoundException
+from ..utils import split_object_by_fields
 
 
 class InstrumentOKXRepository(BaseInstrumentRepository):
@@ -35,7 +36,7 @@ class InstrumentOKXRepository(BaseInstrumentRepository):
     def add_instruments_to_db(self):
         if self.instruments_data:
             for item in self.instruments_data:
-                instr_data, info_data = self._split_object_by_fields(item, ["instId"])
+                instr_data, info_data = split_object_by_fields(item, ["instId"])
                 instrument = self.create_instrument(**instr_data)
                 info_data.update({"inst": instrument})
                 self.create_info_for_instrument(**info_data)
