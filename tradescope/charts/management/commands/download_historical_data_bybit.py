@@ -1,8 +1,6 @@
-import asyncio
 import time
 from datetime import datetime as dt
 
-from django.core.files.base import ContentFile
 from django.core.management import BaseCommand
 
 

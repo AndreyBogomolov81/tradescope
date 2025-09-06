@@ -30,8 +30,8 @@ export default {
     return {
       list_of_exchanges: ['MOEX', 'Crypto Market'],
       selected_exhcange: 'Crypto Market',
-      list_of_periods: ['1m', '5m', '15m', '1h', '4h', '1D', '1W', '1M'],
-      selected_period: '5m'
+      list_of_periods: ['1', '3', '5', '15', '30', '60', '120', '240', '360', '720'],
+      selected_period: '15'
     }
   },
   methods: {
@@ -39,6 +39,7 @@ export default {
       this.selected_exhcange = data
     },
     handleSelectPeriod(data) {
+      this.$emit('select_period', data)
       this.selected_period = data
     }
   },

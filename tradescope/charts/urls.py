@@ -24,5 +24,10 @@ urlpatterns = [
         'instruments-okx/',
         views.InstrumentOKXAPIView.as_view(),
         name='instruments_okx'
+    ),
+    path(
+        'candles-data-bybit/',
+        views.CandlesDataBybitAPIView.as_view(),
+        name='candles_data_bybit'
     )
 ]

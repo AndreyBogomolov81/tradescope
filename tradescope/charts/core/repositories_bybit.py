@@ -27,6 +27,7 @@ from ..utils import (
     get_intervals_for_klines_query,
     round_to_nearest,
     split_object_by_fields,
+    split_df_to_dict
 )
 from .base_repositories import BaseInstrumentRepository
 from .exceptions import InstrumentNotFoundException
@@ -65,6 +66,14 @@ class InstrumentBybitRepository(BaseInstrumentRepository):
         self._intervals = {
             i: self._get_intervals_for_instrument(i) for i in intervals
         }
+
+    def _set_instrument(self, symbol):
+        instrument = self.get_by_symbol(symbol)
+        if not instrument:
+            raise Exception(f"The {symbol} does not exist")
+
+        self._current_instrument = instrument
+        self._current_symbol = symbol
 
     def get_by_symbol(self, symbol: str) -> models.Model | None:
         """
@@ -303,12 +312,7 @@ class InstrumentBybitRepository(BaseInstrumentRepository):
         :return:
         '''
         try:
-            instrument = self.get_by_symbol(symbol)
-            if not instrument:
-                raise Exception(f"The {symbol} does not exist")
-
-            self._current_instrument = instrument
-            self._current_symbol = symbol
+            self._set_instrument(symbol)
             self._current_start_date = start_date
             self._current_end_date = end_date
             self._set_intervals()
@@ -322,6 +326,61 @@ class InstrumentBybitRepository(BaseInstrumentRepository):
 
         except Exception as e:
             pass
+
+    def get_candles(self, symbol, interval):
+        '''
+        Метод для получения свечных данных по инструменту
+        :param symbol:
+        :param interval:
+        :return:
+        '''
+        try:
+            self._set_instrument(symbol)
+            hd = self._current_instrument.hist_data.filter(interval=interval)
+            if hd.exists():
+                df_total = pd.concat(
+                    [pd.read_json(f.data.path) for f in hd],
+                    axis=0,
+                    ignore_index=True
+                ).sort_values(by='time')
+                res = split_df_to_dict(
+                    df_total[['time', 'open', 'high', 'low', 'close', 'volume']],
+                    1000
+                )[:: -1]
+                return res
+            return []
+        except Exception as e:
+            pass
+
+
+def test_result1(array):
+    # все кроме первого из вложенных списков должны иметь по 1000 элементов
+    for i, v in enumerate(array, 1):
+        print(i, len(v))
+
+
+def test_result2(array):
+    # все эхлементы в вложенном списке должны быть отсортированы по возратсанию
+    for i, v in enumerate(array, 1):
+        print(i, v[0]['time'] < v[-1]['time'])
+
+
+def test_result3(array):
+    # последний элемент первого вложенного списка должен иметь самую большую дату
+    # первый элемент последнего вложенного списка должен иметь самую раннюю дату
+    max_e = array[0][-1]['time']
+    min_e = array[-1][0]['time']
+    common_l = []
+    for i in array:
+        common_l.extend(i)
+
+    for i in common_l:
+        if ((i['time'] != max_e and i['time'] >= max_e)
+                or (i['time'] != min_e and i['time'] <= min_e)):
+            print(False)
+            break
+    else:
+        print(True)
 
 
 # Можно определить специальные репозитории, если потребуется логика per-model:

@@ -180,82 +180,186 @@ class CategoryBybit(models.Model):
             {'title': 'spot_bybit', 'system_mark': 'spot', 'description': 'Spot'},
             {'title': 'linear_bybit', 'system_mark': 'linear', 'description': 'Futures'},
             {'title': 'inverse_bybit', 'system_mark': 'inverse', 'description': 'Inverse Futures'},
-            {'title': 'option_bybit', 'system_mark': 'option', 'description': 'Option'},
+            # {'title': 'option_bybit', 'system_mark': 'option', 'description': 'Option'},
         ]
         for c in t:
             cls.objects.create(**c)
 
 
-# TODO: сделать модели для хранения исторических данных по инструментам для каждой категории и для каждого таймфрейма
-class BaseHistoricalDataBybit(models.Model):
+class BaseCandleBybit(models.Model):
     class Meta:
         abstract = True
 
-    startTime = models.FloatField()
-    openPrice = models.FloatField()
-    highPrice = models.FloatField()
-    lowPrice = models.FloatField()
-    closePrice = models.FloatField()
+    time = models.FloatField()
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
     volume = models.FloatField()
     turnover = models.FloatField()
     interval = models.CharField(max_length=10)
 
 
-class HistoricalDataBybitSpot(
-    BaseHistoricalDataBybit,
+class CandleBybitSpot(
+    BaseCandleBybit,
     models.Model
 ):
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['startTime', 'inst', 'interval'], name='unique_spot_startTime_inst_interval')
+            models.UniqueConstraint(fields=['time', 'inst', 'interval'],
+                                    name='unique_spot_startTime_inst_interval')
         ]
         indexes = [
-            models.Index(fields=['startTime'])
+            models.Index(fields=['time'])
         ]
-        ordering = ['startTime']
+        ordering = ['time']
 
     inst = models.ForeignKey(
         InstrumentBybitSpot,
         on_delete=models.CASCADE,
-        related_name='historical_spot_bybit'
+        related_name='candles'
     )
 
 
-class HistoricalDataBybitLinear(
-    BaseHistoricalDataBybit,
+class CandleBybitLinear(
+    BaseCandleBybit,
     models.Model
 ):
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['startTime', 'inst', 'interval'], name='unique_linear_startTime_inst_interval')
+            models.UniqueConstraint(fields=['time', 'inst', 'interval'],
+                                    name='unique_linear_startTime_inst_interval')
         ]
         indexes = [
-            models.Index(fields=['startTime'])
+            models.Index(fields=['time'])
         ]
-        ordering = ['startTime']
+        ordering = ['time']
 
     inst = models.ForeignKey(
         InstrumentBybitLinear,
         on_delete=models.CASCADE,
-        related_name='historical_linear_bybit'
+        related_name='candles'
     )
 
 
-class HistoricalDataBybitInverse(
-    BaseHistoricalDataBybit,
+class CandleBybitInverse(
+    BaseCandleBybit,
     models.Model
 ):
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['startTime', 'inst', 'interval'], name='unique_inverse_startTime_inst_interval')
+            models.UniqueConstraint(fields=['time', 'inst', 'interval'],
+                                    name='unique_inverse_startTime_inst_interval')
         ]
         indexes = [
-            models.Index(fields=['startTime'])
+            models.Index(fields=['time'])
         ]
-        ordering = ['startTime']
+        ordering = ['time']
 
     inst = models.ForeignKey(
         InstrumentBybitInverse,
         on_delete=models.CASCADE,
-        related_name='historical_inverse_bybit'
+        related_name='candles'
     )
+
+
+def historical_data_spot_dir_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return "historical_data_bybit/coin_spot_{0}/{1}".format(
+        instance.inst.symbol,
+        filename
+    )
+
+
+def historical_data_linear_dir_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return "historical_data_bybit/coin_linear_{0}/{1}".format(
+        instance.inst.symbol,
+        filename
+    )
+
+
+def historical_data_inverse_dir_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    return "historical_data_bybit/coin_inverse_{0}/{1}".format(
+        instance.inst.symbol,
+        filename
+    )
+
+
+class HistoricalDataBybitSpot(
+    models.Model
+):
+    class Meta:
+        indexes = [
+            models.Index(fields=['start_date', 'end_date', 'interval'])
+        ]
+        ordering = ['start_date']
+
+    start_date = models.FloatField()
+    end_date = models.FloatField()
+    interval = models.CharField(max_length=50)
+    total_count = models.IntegerField()
+
+    inst = models.ForeignKey(
+        InstrumentBybitSpot,
+        on_delete=models.CASCADE,
+        related_name='hist_data'
+    )
+
+    data = models.FileField(upload_to=historical_data_spot_dir_path)
+
+    def __str__(self):
+        return f'instr={self.inst.symbol}, interval={self.interval}'
+
+
+class HistoricalDataBybitLinear(
+    models.Model
+):
+    class Meta:
+        indexes = [
+            models.Index(fields=['start_date', 'end_date', 'interval'])
+        ]
+        ordering = ['start_date']
+
+    start_date = models.FloatField()
+    end_date = models.FloatField()
+    interval = models.CharField(max_length=50)
+    total_count = models.IntegerField()
+
+    inst = models.ForeignKey(
+        InstrumentBybitLinear,
+        on_delete=models.CASCADE,
+        related_name='hist_data'
+    )
+
+    data = models.FileField(upload_to=historical_data_linear_dir_path)
+
+    def __str__(self):
+        return f'instr={self.inst.symbol}, interval={self.interval}'
+
+
+class HistoricalDataBybitInverse(
+    models.Model
+):
+    class Meta:
+        indexes = [
+            models.Index(fields=['start_date', 'end_date', 'interval'])
+        ]
+        ordering = ['start_date']
+
+    start_date = models.FloatField()
+    end_date = models.FloatField()
+    interval = models.CharField(max_length=50)
+    total_count = models.IntegerField()
+
+    inst = models.ForeignKey(
+        InstrumentBybitInverse,
+        on_delete=models.CASCADE,
+        related_name='hist_data'
+    )
+
+    data = models.FileField(upload_to=historical_data_inverse_dir_path)
+
+    def __str__(self):
+        return f'instr={self.inst.symbol}, interval={self.interval}'

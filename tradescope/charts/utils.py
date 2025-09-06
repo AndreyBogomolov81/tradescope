@@ -1,64 +1,21 @@
 import asyncio
 import aiohttp
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta, datetime
 from typing import List
 import pandas as pd
 import numpy as np
 
 
-def get_intervals_for_klines_query(start_date, end_date, interval=15) -> List[dict]:
+def round_to_nearest(d, interval):
     '''
-    Функция получения списка временных интервалов для запроса свечей с биржи ByBit
-    :param start_date: стартовая дата
-    :param end_date: конечная дата
-    :param interval: таймфрейм в минутах
+    Функция округления времени по интервалу
+    время выдается минус три часа от московского
+    :param d:
+    :param interval:
     :return:
     '''
-    interval_sec = interval * 60
-    m = end_date.minute
-    m -= m % interval
-    end_date = dt(
-        year=end_date.year,
-        month=end_date.month,
-        day=end_date.day,
-        hour=end_date.hour,
-        minute=m
-    )
-    start = int(dt.timestamp(start_date))
-    end = int(dt.timestamp(end_date))
+    return d - (d - dt.min) % timedelta(minutes=int(interval))
 
-    # получить непрерывный список timestamp для интервала
-    times = (i for i in range(start, end + interval_sec, interval_sec))
-
-    ls = []
-    count = 0
-    st = 0
-    ed = 0
-    for v in times:
-        ed = v
-        if count == 1:
-            st = v
-        if count == 900:
-            ls.append(
-                {
-                    'start': st,
-                    'end': ed,
-                    'limit': count
-                }
-            )
-            count = 1
-        else:
-            count += 1
-    else:
-        if count > 1:
-            ls.append(
-                {
-                    'start': st,
-                    'end': ed,
-                    'limit': count - 1
-                }
-            )
-    return ls
 
 
 async def fetch(session, url):
@@ -67,7 +24,6 @@ async def fetch(session, url):
 
 
 async def get_klines(symbol, category, start_date=None, end_date=None, interval='15'):
-
     # Создаем сессию один раз
     async with aiohttp.ClientSession() as session:
         if start_date and end_date:
@@ -97,7 +53,7 @@ async def get_klines(symbol, category, start_date=None, end_date=None, interval=
         else:
             url = ('https://api.bybit.com/v5/market/kline'
                    '?category={category}&symbol={symbol}&interval={interval}'
-                  '&limit={limit}')
+                   '&limit={limit}')
             task = asyncio.create_task(fetch(session, url.format(
                 category=category,
                 symbol=symbol,
@@ -166,3 +122,55 @@ def get_klines_for_instrument(record, interval: str):
     # print(df_hour['time'].iloc[0])
     # возвращаем словарь
     return df_hour['time'].iloc[0], df_hour.to_dict(orient='records')
+
+
+def get_intervals_for_klines_query(
+        start_date, end_date, interval=15
+) -> List[dict]:
+    """
+    Функция получения списка временных интервалов для запроса свечей с биржи ByBit
+    :param start_date: стартовая дата
+    :param end_date: конечная дата
+    :param interval: таймфрейм в минутах
+    :return:
+    """
+    interval_sec = interval * 60
+    start = int(dt.timestamp(start_date))
+    end = int(dt.timestamp(end_date))
+
+    # получить непрерывный список timestamp для интервала
+    times = (i for i in range(start, end + interval_sec, interval_sec))
+
+    ls = []
+    count = 1
+    st = 0
+    ed = 0
+    for v in times:
+        ed = v
+        if count == 1:
+            st = v
+        if count == 900:
+            ls.append({"start": st, "end": ed, "limit": count})
+            count = 1
+        else:
+            count += 1
+    else:
+        if count > 1:
+            ls.append({"start": st, "end": ed, "limit": count - 1})
+    return ls
+
+
+def split_object_by_fields(data: dict, fields: list) -> tuple[dict, dict]:
+    """
+    метод для разбиения словаря на два отдельных по
+    """
+    instr_data = {k: v for k, v in data.items() if k in fields}
+    info_data = {k: v for k, v in data.items() if k not in fields}
+
+    return instr_data, info_data
+
+def split_df_to_dict(df, chunk_size):
+    return [
+        df[i:i + chunk_size].copy().to_dict(orient='records')
+        for i in range(0, len(df), chunk_size)
+    ]

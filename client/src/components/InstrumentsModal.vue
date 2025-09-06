@@ -134,7 +134,9 @@ export default {
         'categories_bybit',
         'categories_okx',
         'instruments_bybit',
-        'instruments_okx'
+        'instruments_okx',
+        'base_instrument',
+        'selected_instruments'
     ],
 
     data() {
@@ -165,9 +167,7 @@ export default {
           ? [...this.instruments_bybit]
           .find(i => i.category == 'Spot')['instruments'] : [],
         
-        selected_instr: Array.isArray(this.instruments_bybit) 
-          ? this.instruments_bybit.map(i => i.instruments)
-          .flat().filter(i => i.selected) : []
+        _selected_instr: null
       }        
     },
 
@@ -187,24 +187,26 @@ export default {
       instruments_bybit: {
         handler(newVal) {
           this._current_instruments_list = Array.isArray(newVal) 
-            ? [...newVal].find(i => i.category == 'Spot')['instruments'] : []
-            
-          this._base_instrument = Array.isArray(newVal) 
-            ? [...newVal].find(i => i.category == 'Spot')['instruments']
-            .find(i => i.isBase) : null
-
-
-          this.selected_instr = Array.isArray(newVal) 
-            ? [...newVal].map(
-              i => i.instruments              
-            ).flat().filter(i => i.selected) : []
-
+            ? [...newVal].find(i => i.category == 'Spot')['instruments'] : []          
+          
           this._countSelected = Array.isArray(newVal) 
             ? [...newVal].map(
               i => i.instruments              
             ).flat().filter(i => i.selected).length : 0
         }
-      },      
+      },
+
+      base_instrument: {
+        handler(newVal) {
+          this._base_instrument = newVal
+        }
+      },
+      
+      selected_instruments: {
+        handler(newVal) {
+          this._selected_instr = Array.isArray(newVal) ? [...newVal] : []
+        }
+      }   
     },
 
     methods: {
@@ -275,12 +277,12 @@ export default {
 
         if (instr.selected) {
           //если в списке нет инструментов
-          if (this.selected_instr.length == 0) {
+          if (this._selected_instr.length == 0) {
             instr.isBase = true
             this._base_instrument = instr
-            this.selected_instr.push(instr)
+            this._selected_instr.push(instr)
           } else {
-            this.selected_instr.push(instr)
+            this._selected_instr.push(instr)
           }
 
         } else {
@@ -292,23 +294,23 @@ export default {
             this._base_instrument = null
           }
 
-          let index = this.selected_instr.findIndex(
+          let index = this._selected_instr.findIndex(
             i => (i.title == instr.title 
               && i.exchange == instr.exchange 
               && i.category == instr.category)
           )
-          this.selected_instr.splice(index, 1)
+          this._selected_instr.splice(index, 1)
 
           //если в списке есть элементы но нет базового, то берем первый и назначаем его базовым
-          if (this.selected_instr.length > 0 && this.selected_instr.filter(i => i.isBase).length == 0) {
-            let newBaseinst = this.selected_instr.at(0)
+          if (this._selected_instr.length > 0 && this._selected_instr.filter(i => i.isBase).length == 0) {
+            let newBaseinst = this._selected_instr.at(0)
             newBaseinst.isBase = true
             this._base_instrument = newBaseinst
           }
         }
       }, 
       handleApply() {
-        this.$emit('change_selected_instr', this.selected_instr)
+        this.$emit('change_selected_instr', this._selected_instr)
       },    
     },
     

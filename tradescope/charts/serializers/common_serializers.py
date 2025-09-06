@@ -12,7 +12,6 @@ class BaseInstrumentSerializer(serializers.Serializer):
     category = serializers.SerializerMethodField()
     exchange = serializers.SerializerMethodField()
     isBase = serializers.SerializerMethodField()
-    data = serializers.SerializerMethodField()
 
     def get_selected(self, obj):
         # возвращаем нужное значение, например, из другого источника
@@ -21,10 +20,6 @@ class BaseInstrumentSerializer(serializers.Serializer):
     def get_isBase(self, obj):
         # возвращаем нужное значение, например, из другого источника
         return False
-
-    def get_data(self, obj):
-        # возвращаем нужное значение, например, из другого источника
-        return
 
     def get_category(self, obj):
         return self.context.get('category')

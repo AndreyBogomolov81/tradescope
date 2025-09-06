@@ -40,12 +40,15 @@ class DataFacade:
         repo = self._get_repo(name)
         return repo.get_all_instruments()
 
-
-
-    # РАБОТАЕМ С ЭТОЙ ФУНКЦИЕЙ
     def create_or_update_hist_data(self, name, symbol, start_date, end_date):
         repo = self._get_repo(name)
         return repo.create_or_update_hist_data(symbol, start_date, end_date)
+
+
+    #работаем с этой функцией
+    def get_candles(self, name, symbol, interval):
+        repo = self._get_repo(name)
+        return repo.get_candles(symbol, interval)
 
 
     def get_by_symbol(self, name, symbol: str):
