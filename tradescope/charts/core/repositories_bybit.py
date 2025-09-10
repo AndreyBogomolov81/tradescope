@@ -343,11 +343,12 @@ class InstrumentBybitRepository(BaseInstrumentRepository):
                     axis=0,
                     ignore_index=True
                 ).sort_values(by='time')
+                max_value = df_total['high'].max()
                 res = split_df_to_dict(
                     df_total[['time', 'open', 'high', 'low', 'close', 'volume']],
                     1000
                 )[:: -1]
-                return res
+                return max_value, res
             return []
         except Exception as e:
             pass

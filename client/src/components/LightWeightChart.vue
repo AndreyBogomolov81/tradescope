@@ -22,7 +22,8 @@ import {
    chartOptions, 
    timeScaleOptions, 
    priceScaleOptions, 
-   candlestickOptions
+   candlestickOptions,
+   volumeOption,
 } from '@/assets/js/options';
 
 import Navbar from './Navbar.vue';
@@ -46,8 +47,12 @@ export default {
         chart: null,
         chart_width: 1,
         chart_height: 0.95,
-        candlestickSeries: null,
+        mainSeries: null,
+        secondSeries: null,
+        thirdSeries: null,
+        volumeSeries: null,
         _main_candles: null,
+        _volume: null,
 
         //выбор тафмферйма в выпадающем списке временно для 1-го пуска
         _sel_per: '15',
@@ -109,6 +114,14 @@ export default {
             window.innerHeight * this.chart_height
           );
         });
+
+        window.addEventListener("keydown", (event) => {
+          console.log(event)
+          if (event.key === "ArrowRight") {
+            this.chart.timeScale().scrollToRealTime();
+          }
+        })
+
         //обновление диапазона при движении к старым данным
         let flag = false
         let end_data = false
@@ -116,10 +129,7 @@ export default {
           if (range.from < 15 && range.from > 0 && !flag && !end_data) {
             flag = true          
             end_data = await this._create_or_update_instruments_map()
-            this._main_candles = this._getBaseInstrumentObj()
-              .candles.get(this._sel_per)
-
-            this.candlestickSeries.setData(this._main_candles)
+            this._setSeries()
             flag = false
           }
         })
@@ -129,40 +139,87 @@ export default {
       async _create_or_update_instruments_map() {
         // функция для создания или обновления данных в хранилище
         let common = []
+        let res;
         for (let v of this.selected_instruments) {
           //сделаем один общий мвссив категорий
-          let categories = [...this.categories_bybit, ...this.categories_okx]
-          let category = categories.find(i => i.description == v.category)
-
-          let instrument = this._getInstrument(category, v)
+          //логика формирования _selected_instruments выполнена так что базовый всегд под 0
+          let instrument = this._getInstrument(v)
           if (!instrument) {
-            instrument = this._setInstrument(category, v)
+            instrument = this._setInstrument(v)
           } 
           //для каждого инструмента запрашиваем данные с сервера
-          let res = await instrument.set_candles(this._sel_per)
+          res = await instrument.set_candles(this._sel_per)
+
+          // если инструмент базовый то достаем массив его данных находим максимальное и минимальное значение
+          // если инструмент не основной добавляем вызываем функцию для создания относительных величин
           common.push(res)
         }
         return common.find(i => i) ? true : false
       },
 
-      _getBaseInstrumentObj() {
-        let categories = [...this.categories_bybit, ...this.categories_okx]
-        let category = categories.find(
-          i => i.description == this.base_instrument.category
-        )
-        return this._getInstrument(category, this.base_instrument)
+      _setSeries() {
+        let [a, b, c] = this.selected_instruments
+        if (this.selected_instruments.length > 1) {
+          this.mainSeries.setData(
+            this._getInstrument(a).relative_candles.get(this._sel_per)
+          )
+
+          this._main_candles = null
+          this.volumeSeries.setData([])
+        } else {
+          this._main_candles = this._getInstrument(a)
+            .candles.get(this._sel_per)
+          this.mainSeries.setData(this._main_candles)
+
+          this._volume = this._main_candles.map(i => this._getVolume(i))
+          this.volumeSeries.setData(
+            this._main_candles.map(i => this._getVolume(i))
+          )
+        }
+        
+        if (b) {
+          this.secondSeries.setData(
+            this._getInstrument(b).relative_candles.get(this._sel_per)
+          )
+        } else {
+          this.secondSeries.setData([])
+        }
+
+        if (c) {
+          this.thirdSeries.setData(
+            this._getInstrument(c).relative_candles.get(this._sel_per)
+          )
+        } else {
+          this.thirdSeries.setData([])
+        }
       },
 
-      _getInstrument(category, instr) {
-        let key = `${category.title}_${instr.title}`
+      _getVolume(obj) {
+        let {time, open, close, volume: value} = obj
+        let color = close > open ? "#008984" : "#f23645";
+        return {time, value, color}
+      },
+
+
+      _getInstrument(instr) {
+        const category = this._getCategoryByInstrument(instr)
+        const key = `${category.title}_${instr.title}`
         return this._instrumentsMap.get(key)
       },
 
-      _setInstrument(category, instr) {
-        let key = `${category.title}_${instr.title}`
-        let i = new Instrument(instr.title, category)
+      _setInstrument(instr) {
+        const category = this._getCategoryByInstrument(instr)
+        const key = `${category.title}_${instr.title}`
+        const i = new Instrument(instr.title, category)
         this._instrumentsMap.set(key, i)
         return i
+      },
+
+      _getCategoryByInstrument(instr) {
+        return [
+          ...this.categories_bybit, 
+          ...this.categories_okx
+        ].find(i => i.description == instr.category)
       },
 
       setLegend(){
@@ -201,9 +258,7 @@ export default {
       async handleSelectPeriod(data) {
         this._sel_per = data
         await this._create_or_update_instruments_map()
-        this._main_candles = this._getBaseInstrumentObj()
-        .candles.get(this._sel_per)
-        this.candlestickSeries.setData(this._main_candles);
+        this._setSeries()
       },
 
       async handleChangeSelectedInstr(data) {
@@ -211,9 +266,7 @@ export default {
         this.selected_instruments = data
         this.base_instrument = data.find(i => i.isBase)
         await this._create_or_update_instruments_map()
-        this._main_candles = this._getBaseInstrumentObj()
-          .candles.get(this._sel_per)
-        this.candlestickSeries.setData(this._main_candles);
+        this._setSeries()
       }
     },
     
@@ -280,23 +333,34 @@ export default {
       //инициализация объекта Map интруметнов
       await this._create_or_update_instruments_map()
 
-      //для базового инструмента выводим свечные данные для основной серии
-      this._main_candles = this._getBaseInstrumentObj()
-        .candles.get(this._sel_per)
-
       //запрашиваем инструменты для okx
       this.instruments_okx = await this.loadData(
         '/api/v1/charts/instruments-okx/'
       )
 
-      //инициализируем график
+      //инициализируем график рабочий код разкоментировать
+
       this.chart = createChart(this.$refs.chart, chartOptions);
-      this.candlestickSeries = this.chart.addCandlestickSeries();
-      this.candlestickSeries.setData(this._main_candles);
+
+      this.mainSeries = this.chart.addCandlestickSeries();
+      this.mainSeries.applyOptions(candlestickOptions[0])
+      this.mainSeries.priceScale().applyOptions(priceScaleOptions);
+
+      this.secondSeries = this.chart.addCandlestickSeries();
+      this.secondSeries.applyOptions(candlestickOptions[1])
+
+      this.thirdSeries = this.chart.addCandlestickSeries();
+      this.thirdSeries.applyOptions(candlestickOptions[2])
+
+      this.volumeSeries = this.chart.addHistogramSeries()
+      this.volumeSeries.applyOptions(volumeOption)
+
+      this.chart.timeScale().applyOptions(timeScaleOptions)
       
-      this.chart.timeScale().applyOptions(timeScaleOptions);
-      this.candlestickSeries.priceScale().applyOptions(priceScaleOptions)
-      this.candlestickSeries.applyOptions(candlestickOptions)
+
+      this._setSeries()
+      this.chart.timeScale().fitContent()
+
       this.chart.resize(
         window.innerWidth * this.chart_width, 
         window.innerHeight * this.chart_height

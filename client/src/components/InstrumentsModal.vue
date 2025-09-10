@@ -143,7 +143,7 @@ export default {
 
       return {
         _inp_value: '',
-        _num_available_instr: 5,
+        _num_available_instr: 3,
         _locked: false,
 
         _exchanges: [

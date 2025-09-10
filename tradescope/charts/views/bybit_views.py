@@ -106,13 +106,15 @@ class CandlesDataBybitAPIView(APIView):
             temp: list = d.get(key, {}).get(interval)
             if temp:
                 candles = temp[count] if count < len(temp) else None
+                max_value = d.get(key, {}).get('max_value')
             else:
-                result = facade.get_candles(
+                max_value, result = facade.get_candles(
                     name=name_model,
                     symbol=symbol,
                     interval=interval
                 )
                 d.setdefault(key, {})[interval] = result
+                d.setdefault(key, {})['max_value'] = max_value
                 candles = d[key][interval][0]
 
             context = {
@@ -121,7 +123,8 @@ class CandlesDataBybitAPIView(APIView):
                     'symbol': symbol,
                     'category': name_model,
                     'interval': interval,
-                    'candles': candles
+                    'candles': candles,
+                    'max_value': max_value
                 }
             }
             return Response(context)

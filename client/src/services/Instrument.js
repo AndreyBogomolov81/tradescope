@@ -4,9 +4,11 @@ export class Instrument {
         this.category = category;
         this.requests_number = new Map();
         this.candles = new Map();
+        this.relative_candles = new Map();
+        this.max_value = null;
     }
 
-    async set_candles(interval) {
+    async set_candles(interval, relative_value=0) {
         /*
         Метод отвечает за подгрузку свечных данных для выбранного интервала
         */
@@ -23,6 +25,11 @@ export class Instrument {
             if (response.length > 0) {
                 let newArr = [...response, ...oldArr]
                 this.candles.set(interval, newArr)
+
+                let rel_arr = newArr.map(
+                    i => this._get_rel_candle(i)
+                )
+                this.relative_candles.set(interval, rel_arr)
                 return false
             }
             return true
@@ -35,11 +42,31 @@ export class Instrument {
             if (response.length > 0) {
                 this.candles.set(interval, response)
                 this.requests_number.set(interval, count)
+
+                let rel_arr = response.map(
+                    i => this._get_rel_candle(i)
+                )
+                this.relative_candles.set(interval, rel_arr)
                 return false            
             }
             return true
-
         }        
+    }
+
+    
+    _get_rel_candle(obj) {
+        const normalize = value => Number(
+            (value / this.max_value).toFixed(4)
+        );
+        let {open, high, low, close} = obj
+
+        return {
+            ...obj,
+            close: normalize(close),
+            high: normalize(high),
+            open: normalize(open),
+            low: normalize(low)
+        }
     }
 
     _increaseCount(interval) {
@@ -54,6 +81,7 @@ export class Instrument {
         if (!response.ok) throw new Error(res.status);
         const result = await response.json();
         if (result.data.candles) {
+            this.max_value = result.data.max_value
             return result.data.candles
         }
         return []
