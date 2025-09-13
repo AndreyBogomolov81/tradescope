@@ -46,6 +46,8 @@ class InfoOKXMixin(models.Model):
     tickSz = models.CharField(max_length=50, blank=True)
     uly = models.CharField(max_length=50, blank=True)
 
+    preMktSwTime = models.CharField(max_length=50, blank=True)
+
     tradeQuoteCcyList = ArrayField(models.CharField(max_length=20))
 
     class Meta:

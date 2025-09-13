@@ -61,7 +61,7 @@ class InstrumentBybitRepository(BaseInstrumentRepository):
     def _set_intervals(self):
         intervals = [
             "1", "3", "5", "15", "30",
-            "60", "120", "240", "360", "720"
+            "60", "120", "240", "360", "720", '1440'
         ]
         self._intervals = {
             i: self._get_intervals_for_instrument(i) for i in intervals
@@ -135,7 +135,7 @@ class InstrumentBybitRepository(BaseInstrumentRepository):
             "?category={category}&symbol={symbol}&interval={interval}"
             "&start={start}&end={end}&limit={limit}"
         )
-
+        interval = 'D' if interval == '1440' else interval
         # Создаем сессию один раз
         async with aiohttp.ClientSession() as session:
             # Запускаем несколько задач
@@ -251,8 +251,8 @@ class InstrumentBybitRepository(BaseInstrumentRepository):
 
         # округляем по старшему интервалу для того чтобы по всем
         # таймфреймам стартовая и конечная даты совпадали
-        start_date = round_to_nearest(self._current_start_date, "720")
-        end_date = round_to_nearest(self._current_end_date, "720")
+        start_date = round_to_nearest(self._current_start_date, "1440")
+        end_date = round_to_nearest(self._current_end_date, "1440")
         # список для хранения всех интервалов
         all_periods = []
 

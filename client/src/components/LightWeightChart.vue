@@ -1,5 +1,9 @@
 <template>
-  <Navbar @select_period="handleSelectPeriod"/>
+  <Navbar
+    :periods="Object.keys(periods)"
+    :selected_period="selected_period"
+    @select_period="handleSelectPeriod"
+    @run_test="handleRunTest"/>
   <div ref="chart" class="chart">
     <div ref="legend" class="legend"></div>
   </div>
@@ -54,8 +58,37 @@ export default {
         _main_candles: null,
         _volume: null,
 
+        // для обновления данных
+        _end_data: false,
+
         //выбор тафмферйма в выпадающем списке временно для 1-го пуска
-        _sel_per: '15',
+        // пережедать для обозначений с учетом дня
+        //periods: ['1', '3', '5', '15', '30', '60', '120', '240', '360', '720'],
+        periods: {
+          '1m': '1',
+          '3m': '3',
+          '5m': '5',
+          '15m': '15',
+          '30m': '30',
+          '1h': '60',
+          '2h': '120',
+          '4h': '240',
+          '6h': '360',
+          '12h': '720',
+          'D': '1440'
+        },
+        selected_period: '15m',
+
+        // набор переменных для тестирования
+        _isRunningTest: false,
+        _test_periods: {
+          '15m': {'sm_period': '3m', 'k': 5},
+          '30m': {'sm_period': '5m', 'k': 6},
+          '1h': {'sm_period': '15m', 'k': 4},
+          '2h': {'sm_period': '30m', 'k': 4},
+          '4h': {'sm_period': '1h', 'k': 4},  
+          'D': {'sm_period': '6h', 'k': 4},         
+        },
 
         //текущий иснтрументы
         _instrumentsMap: new Map(),
@@ -116,7 +149,6 @@ export default {
         });
 
         window.addEventListener("keydown", (event) => {
-          console.log(event)
           if (event.key === "ArrowRight") {
             this.chart.timeScale().scrollToRealTime();
           }
@@ -124,11 +156,10 @@ export default {
 
         //обновление диапазона при движении к старым данным
         let flag = false
-        let end_data = false
         this.chart.timeScale().subscribeVisibleLogicalRangeChange(async range => {
-          if (range.from < 15 && range.from > 0 && !flag && !end_data) {
+          if (range.from < 15 && range.from > 0 && !flag && !this._end_data) {
             flag = true          
-            end_data = await this._create_or_update_instruments_map()
+            this._end_data = await this._create_or_update_instruments_map()
             this._setSeries()
             flag = false
           }
@@ -148,7 +179,9 @@ export default {
             instrument = this._setInstrument(v)
           } 
           //для каждого инструмента запрашиваем данные с сервера
-          res = await instrument.set_candles(this._sel_per)
+          res = await instrument.set_candles(
+            this.periods[this.selected_period]
+          )
 
           // если инструмент базовый то достаем массив его данных находим максимальное и минимальное значение
           // если инструмент не основной добавляем вызываем функцию для создания относительных величин
@@ -161,14 +194,15 @@ export default {
         let [a, b, c] = this.selected_instruments
         if (this.selected_instruments.length > 1) {
           this.mainSeries.setData(
-            this._getInstrument(a).relative_candles.get(this._sel_per)
+            this._getInstrument(a).relative_candles.get(
+              this.periods[this.selected_period]
+            )
           )
-
           this._main_candles = null
           this.volumeSeries.setData([])
         } else {
           this._main_candles = this._getInstrument(a)
-            .candles.get(this._sel_per)
+            .candles.get(this.periods[this.selected_period])
           this.mainSeries.setData(this._main_candles)
 
           this._volume = this._main_candles.map(i => this._getVolume(i))
@@ -179,7 +213,9 @@ export default {
         
         if (b) {
           this.secondSeries.setData(
-            this._getInstrument(b).relative_candles.get(this._sel_per)
+            this._getInstrument(b).relative_candles.get(
+              this.periods[this.selected_period]              
+            )
           )
         } else {
           this.secondSeries.setData([])
@@ -187,12 +223,14 @@ export default {
 
         if (c) {
           this.thirdSeries.setData(
-            this._getInstrument(c).relative_candles.get(this._sel_per)
+            this._getInstrument(c).relative_candles.get(
+              this.periods[this.selected_period]
+            )
           )
         } else {
           this.thirdSeries.setData([])
         }
-      },
+      },      
 
       _getVolume(obj) {
         let {time, open, close, volume: value} = obj
@@ -256,7 +294,8 @@ export default {
 
       //обработчики событий для реактивных данных
       async handleSelectPeriod(data) {
-        this._sel_per = data
+        this._end_data = false
+        this.selected_period = data
         await this._create_or_update_instruments_map()
         this._setSeries()
       },
@@ -267,7 +306,19 @@ export default {
         this.base_instrument = data.find(i => i.isBase)
         await this._create_or_update_instruments_map()
         this._setSeries()
-      }
+      },
+
+      handleRunTest() {
+        this._isRunningTest = true
+        console.log('run test')
+          /*
+        Подготовка тнмтирования
+        1 Тестирование должно выполняться для уже имеющихся данных 
+        нсли даггых нет либо тх меньше чни 1000 то выводится сообщение что данных нет
+        ['1', '3', '5', '15', '30', '60', '120', '240', '360', '720']
+        */
+        alert('Данных недостаточно')
+      },
     },
     
     created() {
@@ -344,7 +395,8 @@ export default {
 
       this.mainSeries = this.chart.addCandlestickSeries();
       this.mainSeries.applyOptions(candlestickOptions[0])
-      this.mainSeries.priceScale().applyOptions(priceScaleOptions);
+      
+      // this.mainSeries.priceScale().applyOptions(priceScaleOptions);
 
       this.secondSeries = this.chart.addCandlestickSeries();
       this.secondSeries.applyOptions(candlestickOptions[1])
@@ -356,10 +408,10 @@ export default {
       this.volumeSeries.applyOptions(volumeOption)
 
       this.chart.timeScale().applyOptions(timeScaleOptions)
-      
+      this.chart.priceScale().applyOptions(priceScaleOptions)
 
       this._setSeries()
-      this.chart.timeScale().fitContent()
+      // this.chart.timeScale().fitContent()
 
       this.chart.resize(
         window.innerWidth * this.chart_width, 

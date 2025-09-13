@@ -34,12 +34,6 @@ class Command(BaseCommand):
             help="Конечная дата в формате dd.mm.yyyy"
         )
 
-        parser.add_argument(
-            "--interval",
-            type=str,
-            help="Интервал",
-            default="15"
-        )
 
     def handle(self, *args, **options):
         start_foo: float = time.time()

@@ -1,4 +1,7 @@
+from datetime import datetime as dt
+
 from rest_framework import serializers
+from django.db.models import Min, Max
 
 
 class CategorySerializer(serializers.Serializer):
@@ -12,6 +15,7 @@ class BaseInstrumentSerializer(serializers.Serializer):
     category = serializers.SerializerMethodField()
     exchange = serializers.SerializerMethodField()
     isBase = serializers.SerializerMethodField()
+    update_date = serializers.SerializerMethodField()
 
     def get_selected(self, obj):
         # возвращаем нужное значение, например, из другого источника
@@ -26,3 +30,22 @@ class BaseInstrumentSerializer(serializers.Serializer):
 
     def get_exchange(self, obj):
         return self.context.get('exchange')
+
+    def get_update_date(self, obj):
+        try:
+            hd = obj.hist_data.all()
+            if hd.exists():
+                min_date = dt.strftime(
+                    dt.fromtimestamp(hd.aggregate(
+                        min_date=Min('start_date'))['min_date']),
+                    '%d.%m.%Y %H:%M'
+                )
+                max_date = dt.strftime(
+                    dt.fromtimestamp(hd.aggregate(
+                        max_date=Max('end_date'))['max_date']),
+                    '%d.%m.%Y %H:%M'
+                )
+                return f'{min_date} - {max_date}'
+            return 'Нет данных'
+        except AttributeError as e:
+            return 'Нет данных'

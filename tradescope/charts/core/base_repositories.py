@@ -62,6 +62,8 @@ class BaseInstrumentRepository:
         await asyncio.gather(*task)
 
     def get_all_instruments(self):
+        if hasattr(self.model, 'hist_data'):
+            return self.model.objects.all().prefetch_related('hist_data')
         return self.model.objects.all()
 
     def create_instrument(self, **instr_data) -> models.Model:

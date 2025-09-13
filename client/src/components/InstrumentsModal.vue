@@ -83,20 +83,23 @@
                       <li  v-if="instr.selected && instr.isBase"
                           class="instrument-item-selected" style="background: rgba(219, 50, 50, 0.4);">                          
                           <input type="checkbox" v-model="instr.selected" @change="handleChecked(instr)">
-                          <span>{{ instr.title }}</span>
+                          <span class="symbol">{{ instr.title }}</span>
+                          <span class="date">{{ instr.update_date }}</span>
                         </li>
 
                       <li  v-else-if="instr.selected"
                           class="instrument-item-selected">
                           <input type="checkbox" v-model="instr.selected" @change="handleChecked(instr)">
-                          <span>{{ instr.title }}</span>
+                          <span class="symbol">{{ instr.title }}</span>
+                          <span class="date">{{ instr.update_date }}</span>
                         </li>
 
                       <li  v-else
                           class="instrument-item">
                           <input v-if="_locked" type="checkbox" disabled v-model="instr.selected">
                           <input v-else type="checkbox" v-model="instr.selected" @change="handleChecked(instr)">
-                          <span>{{ instr.title }}</span>
+                          <span class="symbol">{{ instr.title }}</span>
+                          <span class="date">{{ instr.update_date }}</span>
                         </li>
 
                     </div>                    
@@ -316,9 +319,9 @@ export default {
     
     computed: {
         instruentFilteredList() {
-            return this._current_instruments_list.filter(
-              i => i.title.toLowerCase().includes(
-                this._inp_value))
+          return this._current_instruments_list.filter(
+            i => i.title.toLowerCase().includes(
+              this._inp_value))
         },        
     },
 }
@@ -398,11 +401,26 @@ export default {
 .instrument-item,
 .instrument-item-selected
  {  
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border-bottom: 1px solid #23272F; /* светло-серая линия */
   transition: 0.2s;
   padding: 10px;
   cursor: pointer;
 } 
+
+.symbol {
+  font-weight: 600;
+}
+
+.date {
+  margin-left: auto;
+  color: #9aa4b2;
+  white-space: nowrap;      /* не переносить дату */
+  text-align: right;
+  font-style: italic;
+}
 
 .instrument-item-selected {
   background: #8782766e;

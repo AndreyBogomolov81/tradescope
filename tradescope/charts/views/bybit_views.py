@@ -85,7 +85,7 @@ class InstrumentBybitAPIView(APIView):
 
 class CandlesDataBybitAPIView(APIView):
     """
-    Класс для получения свечных данных
+    Класс для получения свечных данных с bybit
     """
     historical_data = {}
 
