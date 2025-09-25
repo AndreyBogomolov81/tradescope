@@ -76,3 +76,6 @@ class InstrumentOKXAPIView(APIView):
             )
 
         return Response(context)
+
+class CandlesDataOKXAPIView(APIView):
+    ...

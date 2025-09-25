@@ -46,6 +46,8 @@ class InfoOKXMixin(models.Model):
     tickSz = models.CharField(max_length=50, blank=True)
     uly = models.CharField(max_length=50, blank=True)
 
+    preMktSwTime = models.CharField(max_length=50, blank=True)
+
     tradeQuoteCcyList = ArrayField(models.CharField(max_length=20))
 
     class Meta:
@@ -155,7 +157,7 @@ class CategoryOKX(models.Model):
             {'title': 'spot_okx', 'system_mark': 'SPOT', 'description': 'Spot'},
             {'title': 'futures_okx', 'system_mark': 'FUTURES', 'description': 'Futures'},
             {'title': 'margin_okx', 'system_mark': 'MARGIN', 'description': 'Margin'},
-            {'title': 'swap_okx', 'system_mark': 'SWAP', 'description': 'Swap'},
+            # {'title': 'swap_okx', 'system_mark': 'SWAP', 'description': 'Swap'},
         ]
         for c in t:
             cls.objects.create(**c)

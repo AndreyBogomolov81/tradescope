@@ -2,21 +2,27 @@ from typing import Type
 
 from django.db import models
 
-from .repositories_bybit import (
-    SpotBybitInstrumentRepository, LinearBybitInstrumentRepository,
-    InverseBybitInstrumentRepository, OptionBybitInstrumentRepository,
-)
-
-from .repositories_okx import (
-    SpotOKXInstrumentRepository, MarginOKXInstrumentRepository,
-    SwapOKXInstrumentRepository, FuturesOKXInstrumentRepository
-)
-
 from ..models import (
-    InstrumentBybitSpot, InstrumentBybitLinear,
-    InstrumentBybitInverse, InstrumentBybitOption,
-    InstrumentOKXSpot, InstrumentOKXMargin,
-    InstrumentOKXSwap, InstrumentOKXFutures
+    InstrumentBybitInverse,
+    InstrumentBybitLinear,
+    InstrumentBybitOption,
+    InstrumentBybitSpot,
+    InstrumentOKXFutures,
+    InstrumentOKXMargin,
+    InstrumentOKXSpot,
+    InstrumentOKXSwap,
+)
+from .repositories_bybit import (
+    InverseBybitInstrumentRepository,
+    LinearBybitInstrumentRepository,
+    OptionBybitInstrumentRepository,
+    SpotBybitInstrumentRepository,
+)
+from .repositories_okx import (
+    FuturesOKXInstrumentRepository,
+    MarginOKXInstrumentRepository,
+    SpotOKXInstrumentRepository,
+    SwapOKXInstrumentRepository,
 )
 
 
@@ -29,7 +35,7 @@ def repository_factory_for_model(model: Type):
         InstrumentOKXSpot: SpotOKXInstrumentRepository,
         InstrumentOKXMargin: MarginOKXInstrumentRepository,
         InstrumentOKXSwap: SwapOKXInstrumentRepository,
-        InstrumentOKXFutures: FuturesOKXInstrumentRepository
+        InstrumentOKXFutures: FuturesOKXInstrumentRepository,
     }
     repo_cls = mapping.get(model)
     return repo_cls(model)

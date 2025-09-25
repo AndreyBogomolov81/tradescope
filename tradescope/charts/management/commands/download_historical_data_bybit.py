@@ -1,95 +1,58 @@
+import time
 from datetime import datetime as dt
-import asyncio
 
 from django.core.management import BaseCommand
-from django.core.files.base import ContentFile
-
-from charts.utils import get_klines, get_cleared_dataset
-from charts.models import InstrumentByBitLinear, HistoricalDataByBitLinear, InstrumentBybit
 
 
 class Command(BaseCommand):
-    help = 'Получения исторических данных по конкретному инструменту с ByBit'
+    help = "Получения исторических данных по конкретному инструменту с ByBit"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--category',
+            "--name-model",
             type=str,
-            help='категория'
+            help="имя модели: "
+                 "spot_bybit, linear_bybit, inverse_bybit, option_bybit, "
+                 "spot_okx, margin_okx, swap_okx, futures_okx",
         )
 
         parser.add_argument(
-            'symbol',
+            "symbol",
             type=str,
-            help='Символ инструмента'
+            help="Символ инструмента"
         )
 
         parser.add_argument(
-            'start_date',
+            "start_date",
             type=str,
-            help='Начальная дата в формате dd.mm.yyyy'
+            help="Начальная дата в формате dd.mm.yyyy"
         )
 
         parser.add_argument(
-            'end_date',
+            "end_date",
             type=str,
-            help='Конечная дата в формате dd.mm.yyyy'
+            help="Конечная дата в формате dd.mm.yyyy"
         )
 
-        parser.add_argument(
-            '--interval',
-            type=str,
-            help='Интервал',
-            default='15'
-        )
 
     def handle(self, *args, **options):
-        try:
-            instrument = InstrumentByBitLinear.objects.get(
-                symbol=options['symbol']
-            )
-            start_date = dt.strptime(
-                options['start_date'],
-                '%d.%m.%Y'
-            )
+        start_foo: float = time.time()
 
-            end_date = dt.strptime(
-                options['end_date'],
-                '%d.%m.%Y'
-            )
+        from charts.core import facade
+        name_model = options["name_model"]
+        symbol = options['symbol']
+        start_date = dt.strptime(options['start_date'], '%d.%m.%Y')
+        end_date = dt.strptime(options['end_date'], '%d.%m.%Y')
+        self.stdout.write(
+            f'Загрузка данных для инструмента {symbol}, модель {name_model}'
+        )
 
-            # # получаем набор неочищенных данных
-            raw_data = asyncio.run(get_klines(
-                symbol=options['symbol'],
-                category=options['category'],
-                interval=options['interval'],
-                start_date=start_date,
-                end_date=end_date
-            ))
-            count = 0
-            for item in raw_data:
-                # получаем строку json для
-                start, end, cleared_data = get_cleared_dataset(item['result']['list'])
-                file_name = '{symbol}_{start}_{end}.json'.format(
-                    symbol=options['symbol'],
-                    start=start,
-                    end=end
-                )
-                # создаем объект
-                hd = HistoricalDataByBitLinear(
-                    coin=instrument,
-                    start_date=start,
-                    end_date=end,
-                    interval=options['interval']
-                )
-                content = ContentFile(cleared_data, name=file_name)
-                hd.data.save(file_name, content)
-                count += 1
-            self.stdout.write(f'Загружено файлов: {count}')
-
-        except Exception as e:
-            error_type = type(e).__name__
-            error_message = str(e)
-            self.stderr.write(
-                f'Команда выполнена с ошибкой {error_type}: {error_message}'
-            )
+        facade.create_or_update_hist_data(
+            name=name_model,
+            symbol=symbol,
+            start_date=start_date,
+            end_date=end_date
+        )
+        self.stdout.write(
+            'Загрузка завершена: {:.4}'.format(time.time() - start_foo)
+        )

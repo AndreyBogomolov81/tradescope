@@ -83,20 +83,23 @@
                       <li  v-if="instr.selected && instr.isBase"
                           class="instrument-item-selected" style="background: rgba(219, 50, 50, 0.4);">                          
                           <input type="checkbox" v-model="instr.selected" @change="handleChecked(instr)">
-                          <span>{{ instr.title }}</span>
+                          <span class="symbol">{{ instr.title }}</span>
+                          <span class="date">{{ instr.update_date }}</span>
                         </li>
 
                       <li  v-else-if="instr.selected"
                           class="instrument-item-selected">
                           <input type="checkbox" v-model="instr.selected" @change="handleChecked(instr)">
-                          <span>{{ instr.title }}</span>
+                          <span class="symbol">{{ instr.title }}</span>
+                          <span class="date">{{ instr.update_date }}</span>
                         </li>
 
                       <li  v-else
                           class="instrument-item">
                           <input v-if="_locked" type="checkbox" disabled v-model="instr.selected">
                           <input v-else type="checkbox" v-model="instr.selected" @change="handleChecked(instr)">
-                          <span>{{ instr.title }}</span>
+                          <span class="symbol">{{ instr.title }}</span>
+                          <span class="date">{{ instr.update_date }}</span>
                         </li>
 
                     </div>                    
@@ -134,14 +137,16 @@ export default {
         'categories_bybit',
         'categories_okx',
         'instruments_bybit',
-        'instruments_okx'
+        'instruments_okx',
+        'base_instrument',
+        'selected_instruments'
     ],
 
     data() {
 
       return {
         _inp_value: '',
-        _num_available_instr: 5,
+        _num_available_instr: 3,
         _locked: false,
 
         _exchanges: [
@@ -165,9 +170,7 @@ export default {
           ? [...this.instruments_bybit]
           .find(i => i.category == 'Spot')['instruments'] : [],
         
-        selected_instr: Array.isArray(this.instruments_bybit) 
-          ? this.instruments_bybit.map(i => i.instruments)
-          .flat().filter(i => i.selected) : []
+        _selected_instr: null
       }        
     },
 
@@ -187,24 +190,26 @@ export default {
       instruments_bybit: {
         handler(newVal) {
           this._current_instruments_list = Array.isArray(newVal) 
-            ? [...newVal].find(i => i.category == 'Spot')['instruments'] : []
-            
-          this._base_instrument = Array.isArray(newVal) 
-            ? [...newVal].find(i => i.category == 'Spot')['instruments']
-            .find(i => i.isBase) : null
-
-
-          this.selected_instr = Array.isArray(newVal) 
-            ? [...newVal].map(
-              i => i.instruments              
-            ).flat().filter(i => i.selected) : []
-
+            ? [...newVal].find(i => i.category == 'Spot')['instruments'] : []          
+          
           this._countSelected = Array.isArray(newVal) 
             ? [...newVal].map(
               i => i.instruments              
             ).flat().filter(i => i.selected).length : 0
         }
-      },      
+      },
+
+      base_instrument: {
+        handler(newVal) {
+          this._base_instrument = newVal
+        }
+      },
+      
+      selected_instruments: {
+        handler(newVal) {
+          this._selected_instr = Array.isArray(newVal) ? [...newVal] : []
+        }
+      }   
     },
 
     methods: {
@@ -275,12 +280,12 @@ export default {
 
         if (instr.selected) {
           //если в списке нет инструментов
-          if (this.selected_instr.length == 0) {
+          if (this._selected_instr.length == 0) {
             instr.isBase = true
             this._base_instrument = instr
-            this.selected_instr.push(instr)
+            this._selected_instr.push(instr)
           } else {
-            this.selected_instr.push(instr)
+            this._selected_instr.push(instr)
           }
 
         } else {
@@ -292,31 +297,31 @@ export default {
             this._base_instrument = null
           }
 
-          let index = this.selected_instr.findIndex(
+          let index = this._selected_instr.findIndex(
             i => (i.title == instr.title 
               && i.exchange == instr.exchange 
               && i.category == instr.category)
           )
-          this.selected_instr.splice(index, 1)
+          this._selected_instr.splice(index, 1)
 
           //если в списке есть элементы но нет базового, то берем первый и назначаем его базовым
-          if (this.selected_instr.length > 0 && this.selected_instr.filter(i => i.isBase).length == 0) {
-            let newBaseinst = this.selected_instr.at(0)
+          if (this._selected_instr.length > 0 && this._selected_instr.filter(i => i.isBase).length == 0) {
+            let newBaseinst = this._selected_instr.at(0)
             newBaseinst.isBase = true
             this._base_instrument = newBaseinst
           }
         }
       }, 
       handleApply() {
-        this.$emit('change_selected_instr', this.selected_instr)
+        this.$emit('change_selected_instr', this._selected_instr)
       },    
     },
     
     computed: {
         instruentFilteredList() {
-            return this._current_instruments_list.filter(
-              i => i.title.toLowerCase().includes(
-                this._inp_value))
+          return this._current_instruments_list.filter(
+            i => i.title.toLowerCase().includes(
+              this._inp_value))
         },        
     },
 }
@@ -396,11 +401,26 @@ export default {
 .instrument-item,
 .instrument-item-selected
  {  
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border-bottom: 1px solid #23272F; /* светло-серая линия */
   transition: 0.2s;
   padding: 10px;
   cursor: pointer;
 } 
+
+.symbol {
+  font-weight: 600;
+}
+
+.date {
+  margin-left: auto;
+  color: #9aa4b2;
+  white-space: nowrap;      /* не переносить дату */
+  text-align: right;
+  font-style: italic;
+}
 
 .instrument-item-selected {
   background: #8782766e;

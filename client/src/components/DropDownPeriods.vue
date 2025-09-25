@@ -1,6 +1,6 @@
 <template>
   <div class="btn-group">
-     <button id="markets-list-btn" type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown"
+     <button id="markets-list-btn" :disabled="play" type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown"
     aria-expanded="false">
         {{ selected }}
     </button>
@@ -13,8 +13,9 @@
 <script>
 export default {
     props: [
+        'play', 
         'items',
-        'selectionItem', 
+        'selectionItem',
     ],
     data() {
       return {

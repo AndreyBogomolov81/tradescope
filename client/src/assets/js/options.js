@@ -6,9 +6,15 @@ export const chartOptions = {
         background: { color: '#181c27' },
         textColor: '#DDD',
     },
+
     grid: {
         vertLines: { color: '#242733' },
         horzLines: { color: '#242733' },
+    },
+
+    rightPriceScale: {
+        visible: true, // обязательно
+        borderVisible: false,
     },
 
     // height: 1200,
@@ -32,8 +38,21 @@ export const chartOptions = {
             color: '#9B7DFF',
             labelBackgroundColor: '#9B7DFF',
         }, 
-    },
+    },    
    
+}
+
+export const volumeOption = {
+    color: '#26a69a',
+    priceFormat: {
+        type: 'volume',
+    },
+    priceScaleId: '', // set as an overlay by setting a blank priceScaleId
+    // set the positioning of the volume series
+    scaleMargins: {
+        top: 0.8, // highest point of the series will be 70% away from the top
+        bottom: 0,
+    },
 }
 
 export const timeScaleOptions = {
@@ -49,10 +68,38 @@ export const priceScaleOptions = {
     },
 }
 
-export const candlestickOptions = {
-    wickUpColor: '#089981',
-    upColor: '#089981',
-    wickDownColor: '#f23645',
-    downColor: '#f23645',
-    borderVisible: false,
-}
+
+export const candlestickOptions = [
+    {
+        wickUpColor: '#089981',
+        upColor: '#089981',
+        wickDownColor: '#f23645',
+        downColor: '#f23645',
+        borderVisible: false,
+        lastValueVisible: true,          // <-- включаем метку последней цены
+        priceLineVisible: true,
+        priceFormat: { type: 'price' },
+        priceScaleId: 'right',
+
+    },
+    {
+        wickUpColor: 'rgba(60, 180, 228, 0.5)',
+        upColor: 'rgba(60, 180, 228, 0.5)',
+        wickDownColor: 'rgba(42, 94, 236, 0.5)',
+        downColor: 'rgba(42, 94, 236, 0.5)',
+        borderVisible: false,
+        lastValueVisible: true,          // <-- включаем метку последней цены
+        priceLineVisible: true,          // <-- линия текущей цены (для некоторых серий)
+        priceFormat: { type: 'price' },
+    },
+    {
+        wickUpColor: 'rgba(213, 86, 238, 0.5)',
+        upColor: 'rgba(213, 86, 238, 0.5)',
+        wickDownColor: 'rgba(54, 6, 50, 0.5)',
+        downColor: 'rgba(54, 6, 50, 0.5)',
+        borderVisible: false,
+        lastValueVisible: true,          // <-- включаем метку последней цены
+        priceLineVisible: true,          // <-- линия текущей цены (для некоторых серий)
+        priceFormat: { type: 'price' },
+    }
+]
