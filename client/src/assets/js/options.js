@@ -38,7 +38,7 @@ export const chartOptions = {
             color: '#9B7DFF',
             labelBackgroundColor: '#9B7DFF',
         }, 
-    },
+    },    
    
 }
 

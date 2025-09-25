@@ -1,9 +1,13 @@
 <template>
   <Navbar
-    :periods="Object.keys(periods)"
+    :periods="periods_keys"
     :selected_period="selected_period"
     @select_period="handleSelectPeriod"
-    @run_test="handleRunTest"/>
+    @run_test="handleRunTest"
+    @reset_test="hendleResetTest"
+    @update_hist_data="handleUpdateHistData"
+    @play="handlePlay"
+    @pause="handlePause"/>
   <div ref="chart" class="chart">
     <div ref="legend" class="legend"></div>
   </div>
@@ -46,25 +50,7 @@ export default {
     },
 
     data() {
-      return {
-        //для настройки графика
-        chart: null,
-        chart_width: 1,
-        chart_height: 0.95,
-        mainSeries: null,
-        secondSeries: null,
-        thirdSeries: null,
-        volumeSeries: null,
-        _main_candles: null,
-        _volume: null,
-
-        // для обновления данных
-        _end_data: false,
-
-        //выбор тафмферйма в выпадающем списке временно для 1-го пуска
-        // пережедать для обозначений с учетом дня
-        //periods: ['1', '3', '5', '15', '30', '60', '120', '240', '360', '720'],
-        periods: {
+      let periods = {
           '1m': '1',
           '3m': '3',
           '5m': '5',
@@ -76,18 +62,44 @@ export default {
           '6h': '360',
           '12h': '720',
           'D': '1440'
-        },
-        selected_period: '15m',
+        }
+
+      let periods_keys = Object.keys(periods)
+
+      return {
+        //для настройки графика
+        chart: null,
+        chart_width: 1,
+        chart_height: 0.95,
+        mainSeries: null,
+        secondSeries: null,
+        thirdSeries: null,
+        volumeSeries: null,
+        _main_candles: null,
+        _volume: null,
+        _priceLines: [],
+
+        // для обновления данных
+        _end_data: false,
+
+        //выбор тафмферйма в выпадающем списке временно для 1-го пуска
+        // пережедать для обозначений с учетом дня
+        //periods: ['1', '3', '5', '15', '30', '60', '120', '240', '360', '720'],
+        periods,
+        periods_keys,
+        selected_period: '1h',
 
         // набор переменных для тестирования
-        _isRunningTest: false,
+        isReadyTest: false,
+        _base_test_candles: null,
+        _block_update_hist: false,
+        _streamInterval: null,
+        _pauseTest: true,
+        
         _test_periods: {
-          '15m': {'sm_period': '3m', 'k': 5},
-          '30m': {'sm_period': '5m', 'k': 6},
-          '1h': {'sm_period': '15m', 'k': 4},
-          '2h': {'sm_period': '30m', 'k': 4},
-          '4h': {'sm_period': '1h', 'k': 4},  
-          'D': {'sm_period': '6h', 'k': 4},         
+          '1h': {'base_period': '15m', 'k': 4},
+          '4h': {'base_period': '1h', 'k': 4},  
+          'D': {'base_period': '6h', 'k': 4},         
         },
 
         //текущий иснтрументы
@@ -141,6 +153,8 @@ export default {
       setEventsForChart() {
         //функция для установки всех событий для графика
         //resize window
+        let drawLine = false
+
         window.addEventListener('resize', () => {
           this.chart.resize(
             window.innerWidth * this.chart_width, 
@@ -150,14 +164,78 @@ export default {
 
         window.addEventListener("keydown", (event) => {
           if (event.key === "ArrowRight") {
+            //сдвигаем график до последней свечки
             this.chart.timeScale().scrollToRealTime();
+
+          } else if (event.code == 'ShiftLeft') {
+            let setLine = true
+            // отрисовываем горизонтальную линию
+            this.chart.subscribeClick(params => {
+              if (!params.point) return
+
+              if (setLine) {
+                const price = this.mainSeries.coordinateToPrice(params.point.y);
+                const priceLine = {
+                    price,
+                    color: '#ef5350',
+                    lineWidth: 2,
+                    lineStyle: 0, // LineStyle.Dashed
+                    axisLabelVisible: true,
+                }
+
+                let t = this.mainSeries.createPriceLine(priceLine)
+                this._priceLines.push(t)
+                setLine = false
+              }
+            })
+
+          } else if (event.key == 'z') {
+            drawLine = !drawLine
+            let line = this._priceLines.find(i => i.options().color == '#0d6efd')
+            // редактирование линии 
+            // получаем цену по нажатию на график
+            this.chart.subscribeClick(params => {
+              if (!params.point) return
+              const price = this.mainSeries.coordinateToPrice(params.point.y)
+              if (line) {
+                line.applyOptions({
+                  price,
+                  color: '#ef5350',
+                })
+                line = null
+
+              } else {
+                if (!drawLine) return
+                //если линии ранее не было то находим новую
+                const l = price - price * 0.001
+                const h = price + price * 0.001
+                
+                //дублируем массив свойств #0d6efd
+                line = this._priceLines.find(
+                  i => (i.options().price > l && i.options().price < h)
+                )             
+                //после получения индекса меняем цвет
+                if (line) {
+                  line.applyOptions({color: '#0d6efd'})
+                }
+              }
+              //ищем по цене если совадает получаем индекс
+            })
+          } else if (event.key == 'Delete') {
+            let line = this._priceLines.find(i => i.options().color == '#0d6efd')
+            if (line) {
+              this.mainSeries.removePriceLine(line)
+              this._priceLines.splice(
+                this._priceLines.findIndex(i => i.options().color == line.options().color), 1
+              )
+            }
           }
         })
 
         //обновление диапазона при движении к старым данным
         let flag = false
         this.chart.timeScale().subscribeVisibleLogicalRangeChange(async range => {
-          if (range.from < 15 && range.from > 0 && !flag && !this._end_data) {
+          if (range.from < 15 && !flag && !this._end_data && !this._block_update_hist) {
             flag = true          
             this._end_data = await this._create_or_update_instruments_map()
             this._setSeries()
@@ -230,9 +308,134 @@ export default {
         } else {
           this.thirdSeries.setData([])
         }
-      },      
+        // this.chart.timeScale().fitContent()
+      },
+      
+      //функция для создания тестовых данных
+      async _setTestSeries() {
+        const instr        = this._getInstrument(this.base_instrument);
+        const testPeriod   = this.periods[this.selected_period];                // текущий период
+        const basePeriod   = this.periods[this._test_periods[this.selected_period].base_period]; //-— базовый относитель текущего
+
+        /* 1. Подтягиваем свежие данные (3 попытки) */
+        await this._loadWithRetries(instr, testPeriod, basePeriod, 3);
+
+        /* 2. Берём массив свечей тестового (H1) периода */
+        const testCandles = instr.candles.get(testPeriod);
+
+        /* 3. Выбираем случайную точку отсечения так,
+              чтобы у меньшего тайм-фрейма существовала свеча
+              > последней выбранной H1-свечи.                */
+        const cutIndex = this._randomCutIndex(testCandles, instr.candles.get(basePeriod));
+        const main     = testCandles.slice(0, cutIndex);          // готовый срез H1
+        const lastTime = main.at(-1).time;
+
+        /* 4. Формируем базовый массив начиная СТРОГО после lastTime */
+        const base = instr.candles.get(basePeriod)
+                      .filter(b => b.time > lastTime);
+
+        /* 5. Отрисовываем */
+        this._main_candles      = main;
+        this._base_test_candles = base;
+
+        this.mainSeries.setData(main);
+        this.volumeSeries.setData(main.map(this._getVolume));
+        this.chart.timeScale().fitContent()
+      },
+
+      async _loadWithRetries(instr, testP, baseP, attempts = 3) {
+        for (let i = 0; i < attempts; i++) {
+          if (await instr.set_candles(testP)) return;          // если приходит true то не запрашиваем базовый и выходим
+          // если основной период не пришёл – пробуем 4-кратно подкачать базовый
+          for (let j = 0; j < 4; j++) await instr.set_candles(baseP);
+        }
+        console.log('Данные загрузились');
+      },
+
+      /* б) ищем валидный случайный индекс без рекурсии  */
+      _randomCutIndex(testArr, baseArr) {
+        const baseTimes = new Set(baseArr.map(b => b.time));   //  создаем множество из времен O(1) проверка
+        const len       = testArr.length;
+
+        // максимум 20 попыток
+        for (let tries = 0; tries < 20; tries++) { 
+          //берем случайный индекс от 1 до len-1
+          const idx = Math.floor(Math.random() * (len - 1)) + 1; 
+          // если временная метка есть в базовом массиве возвращаем индекс
+          if (baseTimes.has(testArr[idx - 1].time)) return idx;
+        }
+
+        // если за 20 попыток не нашли ‑ берём последний доступный
+        for (let i = len - 1; i > 0; i--) {
+          if (baseTimes.has(testArr[i - 1].time)) return i;
+        }
+        return len;                                           // fallback: весь массив
+      },
+
+      // Функция-генератор для выдачи данных серий
+      *realTimeGenerator() {
+        for (const bar of this._base_test_candles) {
+          yield bar
+        }
+      },
+
+      startStreaming() {
+        let lastH1 = null
+        const stream = this.realTimeGenerator()
+        this._streamInterval = setInterval(() => {
+          if (this._pauseTest) {
+            return
+          }
+          const next = stream.next()
+          if (next.done) {
+            clearInterval(this._streamInterval)
+            return
+          }
+          // начальная свеча 1h null          
+          let bar_base = next.value
+          //число для округления взависимости от выбранного интервала
+          let rounded_number = Number(this.periods[this.selected_period]) * 60
+          let hourStart = bar_base.time - (bar_base.time % rounded_number)
+          
+          //новый час
+          if (!lastH1 || hourStart > lastH1.time) {
+            if (lastH1) {
+              // если у нас уже была свеча, можно сохранить её в массив
+              this._main_candles.push(lastH1)
+            }
+
+            // создаём новую часовую свечу
+            lastH1 = {
+              time: hourStart,
+              open: bar_base.open,
+              high: bar_base.high,
+              close: bar_base.close,
+              low: bar_base.low,
+              volume: bar_base.volume
+            }
+
+            this.mainSeries.update(lastH1)
+          } else {
+
+            lastH1.high = Math.max(lastH1.high, bar_base.high)
+            lastH1.low = Math.min(lastH1.low, bar_base.low)
+            lastH1.close = bar_base.close
+            lastH1.volume += bar_base.volume
+            
+            this.mainSeries.update(lastH1)
+          }
+
+          let v = this._getVolume(lastH1)
+          this.volumeSeries.update(v)
+        }, 500)
+      },
+
+      stopStreaming() {
+        clearInterval(this._streamInterval)
+      },
 
       _getVolume(obj) {
+        // получение объекта объем для выбранной свечки
         let {time, open, close, volume: value} = obj
         let color = close > open ? "#008984" : "#f23645";
         return {time, value, color}
@@ -240,12 +443,14 @@ export default {
 
 
       _getInstrument(instr) {
+        // получение инструмента 
         const category = this._getCategoryByInstrument(instr)
         const key = `${category.title}_${instr.title}`
         return this._instrumentsMap.get(key)
       },
 
       _setInstrument(instr) {
+        //создыние нового инструмента и включение в отобраэжение
         const category = this._getCategoryByInstrument(instr)
         const key = `${category.title}_${instr.title}`
         const i = new Instrument(instr.title, category)
@@ -254,6 +459,7 @@ export default {
       },
 
       _getCategoryByInstrument(instr) {
+        //получение интсрумента по категории
         return [
           ...this.categories_bybit, 
           ...this.categories_okx
@@ -294,8 +500,21 @@ export default {
 
       //обработчики событий для реактивных данных
       async handleSelectPeriod(data) {
-        this._end_data = false
+        //смена временного интервала
         this.selected_period = data
+        if (this.isReadyTest) {
+          console.log('тестирование')
+          //если во время выбора таймфрема стоит тестирование то реализуем ту же логику что и при запуске тест
+          this.stopStreaming()
+          if (!Object.keys(this._test_periods).includes(this.selected_period)) {
+            alert('неверно выбран интервал')
+            return
+          }
+          await this._setTestSeries()
+          this.startStreaming()
+          return
+        }
+        this._end_data = false        
         await this._create_or_update_instruments_map()
         this._setSeries()
       },
@@ -308,16 +527,51 @@ export default {
         this._setSeries()
       },
 
-      handleRunTest() {
-        this._isRunningTest = true
-        console.log('run test')
-          /*
-        Подготовка тнмтирования
-        1 Тестирование должно выполняться для уже имеющихся данных 
-        нсли даггых нет либо тх меньше чни 1000 то выводится сообщение что данных нет
-        ['1', '3', '5', '15', '30', '60', '120', '240', '360', '720']
-        */
-        alert('Данных недостаточно')
+      async handleRunTest() {
+        // обработка запуска тестирования
+        if (!Object.keys(this._test_periods).includes(this.selected_period)) {
+          alert('неверно выбран интервал')
+          return
+        }
+
+        this.isReadyTest = true
+        this._block_update_hist = true
+        // отключаем выбор биржи
+        //отключаем выбор инструмента из модального окна
+
+        // передадим новый список для периодов
+        await this._setTestSeries()
+        this.startStreaming()
+        
+      },
+
+      hendleResetTest() {
+        // обработка сброса тестирования
+        this.stopStreaming();
+        this.isReadyTest = false
+        this._block_update_hist = false
+
+        // восстанавливаем периоды
+        this.periods_keys = Object.keys(this.periods)
+        this._base_test_candles = null
+        this._setSeries()
+      },
+
+      async handleUpdateHistData() {
+        //обработка обновления исторических данных
+        this.stopStreaming()
+        await this._setTestSeries()
+        this.startStreaming()
+      },
+
+      handlePlay() {
+        //обработка нажатия кнопки play
+        this._pauseTest = false
+      },
+
+      handlePause() {
+        // обработка нажатия кнопки pause
+        this._pauseTest = true
       },
     },
     
@@ -420,6 +674,8 @@ export default {
 
       this.setEventsForChart()
       this.setLegend()
+
+      window.addEventListener('beforeunload', this.stopStreaming)
     },
 
     beforeUnmount() {
@@ -430,6 +686,8 @@ export default {
       //   wsService.unSubscribeTopic 
       //   ? wsService.unSubscribeTopic(this.topic) : wsService.unSubscribe(this.topic);
       // }
+      this.stopStreaming();
+      window.removeEventListener('beforeunload', this.stopStreaming);
     },
   //добавить метод unmounted()
 

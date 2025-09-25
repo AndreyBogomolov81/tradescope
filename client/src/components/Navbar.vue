@@ -1,10 +1,13 @@
 <template>
     <div class="toolbar">
         <!-- markets -->
-        <DropDown :items="list_of_exchanges" :selectionItem="selected_exhcange" @selected="handleSelectExch"/>
+        <DropDownExchange :items="list_of_exchanges" 
+                  :selectionItem="selected_exhcange"
+                  :isTesting="isTesting"
+                  @selected="handleSelectExch"/>
 
         <!--кнопка для вызова модального окна -->
-        <button id="btn-instruents" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchModal">
+        <button id="btn-instruents" :disabled="isTesting" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchModal">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="3" y="16" width="3" height="5" rx="1" fill="#27ae60"/>
           <rect x="9" y="11" width="3" height="10" rx="1" fill="#e74c3c"/>
@@ -14,12 +17,23 @@
         </svg>
         </button>
 
-        <DropDown class="interval" :items="periods" :selectionItem="_sel_period" @selected="handleSelectPeriod"/> 
+        <DropDownPeriods class="interval" 
+                  :items="periods" 
+                  :selectionItem="_sel_period" 
+                  :play="btn_play"
+                  :f="1"
+                  @selected="handleSelectPeriod"/> 
 
         <button v-if="!isTesting" class="btn btn-dark" @click="handleRunTest">Тестирование</button>  
         <button v-else class="btn btn-dark" @click="handleResetTest">Сброс теста</button>
 
-        <button v-if="btn_play" :disabled="!isTesting" class="play-btn" aria-label="Play" @click="handlePlay">
+        <button class="btn btn-dark" 
+                  :disabled="!isTesting || btn_play"
+                  @click="handleUpdateHistData">
+          Обновить данные
+        </button>
+
+        <button v-if="!btn_play" :disabled="!isTesting" class="play-btn" aria-label="Play" @click="handlePlay">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M8 5v14l11-7-11-7z"/>
           </svg>
@@ -35,23 +49,21 @@
         </button>
 
     </div>
-
-
-
 </template>
 
 <script>
 import '@/assets/js/bootstrap.bundle.min.js'
-import DropDown from './DropDown.vue'
+import DropDownExchange from './DropDownExchange.vue'
 import InstrumentsModal from './InstrumentsModal.vue'
+import DropDownPeriods from './DropDownPeriods.vue'
 export default {
-  props: {
-    periods: Array,
-    selected_period: String,
-  },
+  props: [
+    'periods',
+    'selected_period',
+  ],
   data() {
     return {
-      btn_play: true,
+      btn_play: false,
       isTesting: false,
       list_of_exchanges: ['MOEX', 'Crypto Market'],
       selected_exhcange: 'Crypto Market',
@@ -69,11 +81,15 @@ export default {
     },
 
     handlePlay() {
-      this.btn_play = false 
+      //здесь запускаем непосредственно уже подготовленный тест
+      this.btn_play = true
+      this.$emit('play')
     },
 
     handlePause() {
-      this.btn_play = true
+      // тест на паузу
+      this.btn_play = false
+      this.$emit('pause')
     },
 
     handleRunTest() {
@@ -84,10 +100,16 @@ export default {
 
     handleResetTest() {
       this.isTesting = false
+      this.$emit('reset_test')
+    },
+
+    handleUpdateHistData() {
+      this.$emit('update_hist_data')
     }
   },
   components: {
-    DropDown,
+    DropDownPeriods,
+    DropDownExchange,
     InstrumentsModal
   }, 
     
