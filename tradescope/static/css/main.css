@@ -1,0 +1,482 @@
+:root {
+    --bs-dark-bg: #181c27;
+    --bs-dark-bg-subtle: #1a1e23;
+    --bs-primary: #17c3a3;
+    --bg-secondary: #1A1E23;
+    --gradient-start: #4CAF50;
+    --gradient-end: #F44336;
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
+    --accent-color: #17c3a3;
+    --accent-hover: #14a88a;
+    --text-muted: #7f8fa6;
+    --bg-tertiary: #1c2534;
+
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+body {
+    background-color: var(--bs-dark-bg);
+    color: var(--text-primary);
+    padding-top: 80px;
+    display: flex;
+    flex-direction: column;
+}
+.navbar {
+    background-color: var(--bs-dark-bg-subtle);
+}
+.navbar-container {
+    max-width: 1920px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+.navbar-nav .nav-link {
+    color: rgba(255,255,255,0.7);
+    transition: color 0.3s ease;
+}
+.navbar-nav .nav-link:hover {
+    color: var(--text-primary);
+}
+.navbar-nav .nav-link.active {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+.content {
+    flex: 1 0 auto;
+}
+.hero-section {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+}
+.content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+.footer {
+    background-color: var(--bs-dark-bg-subtle);
+    padding: 20px 0;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: #14a88a;
+    border-color: #14a88a;
+}
+.btn-outline-light {
+    color: rgba(255,255,255,0.7);
+    border-color: rgba(255,255,255,0.3);
+}
+.btn-outline-light:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: var(--text-primary);
+}
+.navbar-auth {
+    margin-left: auto;
+}
+.navbar-auth .btn {
+    margin-left: 10px;
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+.navbar-brand svg {
+    margin-right: 10px;
+}
+@media (max-width: 991.98px) {
+    .navbar-container {
+        padding: 0 15px;
+    }
+    .navbar-auth {
+        margin-left: 0;
+        margin-top: 15px;
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    .navbar-auth .btn {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+    .navbar-collapse {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}
+
+.chart-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    font-size: 1.5rem;
+    background-color: var(--bg-primary);
+    padding: 5px 0;
+}
+
+.chart-container {
+    background-color: var(--bg-primary);
+    padding: 10px;
+    border: 2px solid #2c3340;
+    border-radius: 8px;
+    max-height: 600px;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.chart-container img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.page-title {
+    color: var(--text-primary);
+    text-align: left;
+    font-weight: 600;
+}
+
+/*Сайдбар*/
+.sidebar {
+    background-color: var(--bg-secondary);
+    height: 100%;
+    /* border-left: 1px solid rgba(23,195,163,0.2);
+    box-shadow: -2px 0 6px rgba(0,0,0,0.1); */
+}
+
+.level-description-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.level-description-text {
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Стили для списка уровней */
+.levels-list {
+    list-style: none;
+    padding: 0;
+}
+
+.levels-list li {
+    margin-bottom: 10px;
+}
+
+.levels-list .level-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    display: block;
+    padding: 8px 12px;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.levels-list .level-link:hover {
+    background-color: rgba(23,195,163,0.1);
+    border-color: var(--accent-color);
+}
+
+.levels-list .level-link.active {
+    background-color: rgba(23,195,163,0.2);
+    border-color: var(--accent-color);
+}
+
+.levels-list .level-price {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.levels-list .level-type {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* настройка карусели */
+.carousel-control-prev,
+.carousel-control-next {
+    max-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/*теги*/
+.tags-section {
+    margin-top: 20px;
+}
+
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag-badge {
+    background-color: rgba(23, 195, 163, 0.1);
+    color: var(--accent-color);
+    border: 1px solid rgba(23, 195, 163, 0.3);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tag-badge:hover {
+    background-color: rgba(23, 195, 163, 0.2);
+    border-color: var(--accent-color);
+}
+
+.tag-badge.active {
+    background-color: var(--accent-color);
+    color: var(--bg-primary);
+}
+
+/* сиписок уровней */
+.level-card {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.level-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.level-card-header {
+    background-color: var(--bg-tertiary);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.level-title {
+    color: var(--accent-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.level-content {
+    padding: 16px;
+}
+
+.level-description {
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.level-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.level-tags {
+    display: flex;
+    gap: 6px;
+}
+
+.level-tag {
+    background-color: rgba(23, 195, 163, 0.1);
+    color: var(--accent-color);
+    border: 1px solid rgba(23, 195, 163, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    transition: all 0.3s ease;
+}
+
+.level-tag:hover {
+    background-color: rgba(23, 195, 163, 0.2);
+}
+/*пагинация*/
+.pagination {
+    --bs-pagination-color: var(--text-muted);
+    --bs-pagination-bg: rgba(23, 195, 163, 0.1);
+    --bs-pagination-border-radius: 4px;
+    --bs-pagination-hover-color: var(--text-primary);
+    --bs-pagination-hover-bg: rgba(23, 195, 163, 0.2);
+    --bs-pagination-active-color: var(--bg-primary);
+    --bs-pagination-active-bg: var(--accent-color);
+    --bs-pagination-active-border-color: var(--accent-color);
+}
+
+.pagination .page-link {
+    color: var(--text-muted);
+    background-color: rgba(23, 195, 163, 0.1);
+    border: 1px solid transparent;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(23, 195, 163, 0.2);
+    color: var(--text-primary);
+}
+
+.pagination .page-link.active {
+    background-color: var(--accent-color) !important;
+    color: var(--bg-primary) !important;
+    border-color: var(--accent-color);
+}
+
+.pagination .page-link.disabled {
+    color: var(--text-muted);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* блок theory*/
+/* Сайдбар вложенные элементы блок theory*/
+
+.page-theory .sidebar {
+  background-color: var(--bs-dark-bg); /* или другой нейтральный цвет */
+  color: var(--text-primary);
+  border: none; /* если нужно убрать контур */
+  /* position: fixed; */
+  top: 80px;
+  left: 0;
+  height: auto;
+  overflow-y: auto;
+  width: 20%; /* ширину подбери под свой дизайн */
+  padding: 20px;
+}
+
+/* На больших экранах — фиксированная ширина и вертикальное расположение */
+@media (min-width: 992px) {
+  .page-theory .sidebar {
+    position: sticky;
+    top: 80px;
+    height: calc(100vh - 100px);
+    width: 20%;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .page-theory .sidebar {
+    width: 100%;
+    position: static;
+    top: auto;
+    height: auto;
+    padding: 15px;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+  }
+
+  .page-theory .content-wrapper {
+    padding: 0 10px;
+  }
+
+  /* Чтобы основной контент не смещался вниз при открытии collapse */
+  #sidebarTheory.collapse:not(.show) {
+    display: none;
+  }
+  #sidebarTheory.collapse.show {
+    display: block;
+    margin-bottom: 20px;
+  }
+}
+
+/* Кнопка для открытия сайдбара на мобилках */
+@media (max-width: 767.98px) {
+  .page-theory .btn {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+}
+
+
+/* Чтобы ссылки выглядели как текст, но с активным выделением */
+.page-theory .sidebar ul ul {
+    list-style: none;
+}
+.page-theory .sidebar .level-link {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+/* Hover и active-состояния — остаются */
+.page-theory .sidebar .level-link:hover {
+  background-color: rgba(23,195,163,0.1);
+  border-color: var(--accent-color);
+}
+
+.page-theory .sidebar .level-link.active {
+  background-color: rgba(23,195,163,0.2);
+  border-color: var(--accent-color);
+}
+
+/* Дополнительно — если есть вложенные уровни */
+.page-theory .sidebar ul ul {
+  border-left: 1px solid rgba(23,195,163,0.1);
+}
+
+/* .content-theory {
+    margin-left: 100px;
+} */
+
+.content-theory p {
+    margin-bottom: 40px;
+    line-height: 1.8rem;
+    color: rgba(255,255,255,0.8);
+}
+
+/* Стилизация скроллбара только для вкладки "Теория" */
+.page-theory ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Фон дорожки (канала скролла) */
+.page-theory ::-webkit-scrollbar-track {
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+/* Ползунок */
+.page-theory ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--accent-color), var(--accent-hover));
+  border-radius: 10px;
+  border: 2px solid var(--bg-secondary); /* делает его "встроенным" */
+}
+
+/* При наведении — лёгкое свечение */
+.page-theory ::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
+
+/* Для Firefox */
+.page-theory {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) var(--bg-secondary);
+}
+

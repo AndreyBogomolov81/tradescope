@@ -1,7 +1,24 @@
 //Настройки графика
 import { LineStyle, CrosshairMode } from "lightweight-charts"
 
+const daysOfWeek = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+const months = [
+  "Янв",
+  "Фев",
+  "Мар",
+  "Апр",
+  "Май",
+  "Июн",
+  "Июл",
+  "Авг",
+  "Сен",
+  "Окт",
+  "Ноя",
+  "Дек",
+];
+
 export const chartOptions = {
+    autoSize: true,
     layout: {
         background: { color: '#181c27' },
         textColor: '#DDD',
@@ -19,6 +36,44 @@ export const chartOptions = {
 
     // height: 1200,
     // width: 1400,
+    timeScale: {
+        rightOffset: 5,
+        barSpacing: 10,
+        minBarSpacing: 2,
+        borderVisible: false,
+        tickMarkFormatter: (time) => {
+        var date = new Date(time * 1000);
+        var day = date.getUTCDate();
+        var month = date.getUTCMonth();
+        var year = date.getUTCFullYear();
+        var hours = date.getUTCHours();
+        var minutes = date.getUTCMinutes();
+
+        if (month == 0 && day == 1 && hours == 0 && minutes == 0) {
+            return String(year);
+        } else if (day == 1 && hours == 0 && minutes == 0) {
+            return months[date.getUTCMonth()];
+        } else if (hours == 0 && minutes == 0) {
+            return String(day);
+        } else {
+            hours = String(hours).padStart(2, "0");
+            minutes = String(minutes).padStart(2, "0");
+            return `${hours}:${minutes}`;
+        }
+        },
+    },
+    localization: {
+        timeFormatter: (time) => {
+        var date = new Date(time * 1000);
+        var dayOfWeek = daysOfWeek[date.getUTCDay()];
+        var day = date.getUTCDate();
+        var month = months[date.getUTCMonth()];
+        var year = date.getUTCFullYear();
+        var hours = String(date.getUTCHours()).padStart(2, "0");
+        var minutes = String(date.getUTCMinutes()).padStart(2, "0");
+        return `${dayOfWeek} ${day} ${month} ${year}   ${hours}:${minutes}`;
+        },
+    },
 
     //настройка перекрестия
     crosshair: {
@@ -31,12 +86,12 @@ export const chartOptions = {
             width: 8,
             color: '#C3BCDB44',
             style: LineStyle.Solid,
-            labelBackgroundColor: '#9B7DFF',
+            labelBackgroundColor: '#C3BCDB44',
         },
         //настройка видимости горизонтальной линии
         horzLine: {
             color: '#9B7DFF',
-            labelBackgroundColor: '#9B7DFF',
+            labelBackgroundColor: '#C3BCDB44',
         }, 
     },    
    

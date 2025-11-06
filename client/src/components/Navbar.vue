@@ -1,5 +1,15 @@
 <template>
     <div class="toolbar">
+        <!--Доомй-->
+      <a href="http://localhost:8000" target="blank" class="btn btn-home btn-dark btn-sm me-2 d-flex align-items-center" title="Домой" aria-label="Домой">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1"
+             viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 3.293 1 10.293V15a1 1 0 0 0 1 1h3.5a.5.5 0 0 0 .5-.5V11a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v4.5a.5.5 0 0 0 .5.5H14a1 1 0 0 0 1-1v-4.707L8 3.293z"/>
+          <path d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.647a.5.5 0 0 1-.707.707L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z"/>
+        </svg>
+        <span class="d-none d-sm-inline">Home</span>
+      </a>
+      
         <!-- markets -->
         <DropDownExchange :items="list_of_exchanges" 
                   :selectionItem="selected_exhcange"
@@ -152,7 +162,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:hover, .btn-home:hover {
   background: #2980b9;
 }
 

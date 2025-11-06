@@ -1,0 +1,72 @@
+{% extends "traders_blog/base.html" %}
+{% load static %}
+
+{% block title %} Теория {% endblock %}
+
+{% block body_class %}page-theory{% endblock  %}
+
+{% block content %}
+<!-- header подключается из твоего шаблона -->
+
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- Мобильная кнопка -->
+      <button class="btn btn-primary d-lg-none w-100 mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarTheory">
+        📘 Темы конспекта
+      </button>
+
+      <!-- Сайдбар -->
+      <nav class="col-lg-3 col-md-4 collapse d-lg-block sidebar py-4" id="sidebarTheory">
+        <h5 class="text-accent mb-3 px-3">Темы</h5>
+        <ul class="levels-list px-3">
+          {% for category in categories %}
+            <li>
+              <a class="level-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#{{category.slug}}" role="button">
+                {{category.title}}
+                <span class="text-secondary small">▼</span>
+              </a>
+            <ul class="collapse ps-3" id="{{category.slug}}">
+              {% for article in category.records.all %}
+                <li><a href="{% url "traders_blog:theory" slug=article.slug %}" class="level-link">{{article.title}}</a></li>
+              {% endfor %}
+            </ul>
+          </li>                    
+          {% endfor %}
+
+        </ul>
+      </nav>
+
+      <!-- Основной контент -->
+      <main class="col-lg-9 col-md-8 py-4 px-4 content-wrapper">
+        <div class="content-theory">
+            <h2 class="page-title mb-4">{{article.title}}</h2>
+
+            {% if article.description %}
+              <p>{{article.description}}</p>
+            {% endif %}
+
+            {% if article.parts.exists %}
+
+              {% for article_part in article.parts.all %}
+                <h3>{{article_part.title}}</h3>
+                <p>{{article_part.description}}</p>
+
+                {% if article_part.images.exists %}                
+                  {% for item in article_part.images.all %}
+                  <img src="{{item.image.url}}" class="d-block w-100" alt="..." class="img-fluid" style="margin-bottom: 40px;">
+                  <p>{{item.description}}</p>
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+
+            {% else %}
+            <p>Статья в разработке</p>
+            {% endif %}
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+{% endblock  %}
