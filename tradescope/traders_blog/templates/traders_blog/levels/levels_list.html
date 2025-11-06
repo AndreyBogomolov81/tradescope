@@ -1,0 +1,100 @@
+{% extends "traders_blog/base.html" %}
+{% load static %}
+
+{% block title %} Уровни {% endblock %}
+
+{% block content %}
+<!-- Основной контент -->
+        <div class="content container-fluid mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title mb-4">Уровни</h1>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Центральная область со списком уровней -->
+                <div class="col-9">
+                    <!-- Список уровней -->
+                {% if levels %}
+                
+                    {% for level in levels %}
+                    <div class="level-card">
+                            <div class="level-card-header">
+                                <div class="level-title">{{level.title_description}}</div>
+                                <span class="text-secondary">{{level.levels_date}}</span>
+                            </div>
+                            <div class="level-content">
+                                <div class="level-description">
+                                    {{level.description|truncatechars:100}}
+                                </div>
+                                <div class="level-meta">
+                                    <div class="level-tags">
+                                        {% for tag in level.tags.all %}
+                                        <span class="level-tag">{{tag.name}}</span>                                  
+                                        {% endfor %}
+                                    </div>
+                                    <a href="{% url "traders_blog:level_details" id=level.pk %}" 
+                                        class="text-decoration-none" 
+                                        style="color: var(--accent-color);">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>                
+                    {% endfor %}
+                {% else %}
+                    <p style="margin-left: 10px; font-size: 1.5em;">Уровни не зарегестрированы</p>
+                {% endif %}
+                
+                <!-- Пагинация -->
+                {% include "traders_blog/pagination.html" with page=levels%}                
+                 
+
+                <!-- Правый сайдбар с фильтрами и тегами -->
+                <div class="col-3">
+                    <div class="sidebar p-3">
+                        <form action="{% url "traders_blog:levels_list" %}" method="get">
+                        <div class="filters-section">
+                            <h5 class="text-light mb-4">Фильтры</h5>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Инструмент</label>
+                                <select name="instrument" class="form-select bg-dark text-light border-0">
+                                    <option selected>BTCUSDT</option>
+                                    <option>ETHUSDT</option>
+                                    <option>BNBUSDT</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Период</label>
+                                <select class="form-select bg-dark text-light border-0">
+                                    <option selected>За неделю</option>
+                                    <option>За месяц</option>
+                                    <option>За квартал</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="tags-section" style="margin-bottom: 30px;">
+                            <h5 class="text-light mb-4">Теги уровней</h5>
+                            <div class="tag-cloud">
+                                <span class="tag-badge active">Все</span>
+                                {% for t in levels_tags %}
+                                    <span class="tag-badge">{{t.name}}</span>                               
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Скрытые поля для тегов -->
+                        <div id="selected-tags"></div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Применить фильтр</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="{% static "js/levels.js" %}"></script>
+
+{% endblock  %}

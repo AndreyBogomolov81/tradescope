@@ -1,0 +1,99 @@
+{% extends "traders_blog/base.html" %}
+{% load static %}
+
+{% block title %} {{level.title}} {% endblock %}
+
+{% block content %}
+<!-- Основной контент --> 
+  <!-- Основной контент -->
+        <div class="content container-fluid mt-4">
+            <div class="row g-4">
+                <!-- Центральная область с графиком -->
+                <div class="col-10 pe-0">
+                    <!-- Заголовок графика -->
+                    <h2 class="chart-title">
+                        {{level.title}}
+                    </h2>
+
+                    <!-- Контейнер графика -->
+                    <div class="chart-container rounded">
+                        {% if level.images.count == 1 %}
+                            <img src="{{level.images.first.image.url}}" alt="Биржевой график" class="img-fluid">
+                        {% else %}
+                        <div id="carouselExample" class="carousel slide">                            
+                            <div class="carousel-inner">
+                                {% for item in level.images.all %}
+                                    {% if forloop.counter == 1 %}
+                                    <div class="carousel-item active">
+                                        <img src="{{item.image.url}}" class="d-block w-100" alt="..." class="img-fluid">
+                                    </div>
+                                    {% else %}
+                                    <div class="carousel-item">
+                                        <img src="{{item.image.url}}" class="d-block w-100" alt="..." class="img-fluid">
+                                    </div>                                    
+                                    {% endif %}                               
+                                {% endfor %}                              
+                                
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Предыдущий</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Следующий</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Описание уровня -->
+                    <div class="level-description">
+                        <div class="level-description-title">{{level.title_description}}</div>
+                        <div class="level-description-text">
+                            {{level.description}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правый сайдбар -->
+                <div class="col-2 ps-0">
+                    <div class="sidebar p-3 h-100">
+                        <h5 class="text-light mb-4">Уровни {{level.instrument.symbol}}</h5>
+                        <ul class="levels-list">
+                            <li>
+                                <a href="#" class="level-link">
+                                    <span class="level-price">11600</span>
+                                    <span class="level-type">Сильный сопротивления</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="level-link">
+                                    <span class="level-price">11550</span>
+                                    <span class="level-type">Поддержка</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="level-link active">
+                                    <span class="level-price">11500</span>
+                                    <span class="level-type">Ключевой уровень</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="level-link">
+                                    <span class="level-price">11450</span>
+                                    <span class="level-type">Сопротивление</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="level-link">
+                                    <span class="level-price">11400</span>
+                                    <span class="level-type">Поддержка</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>   
+{% endblock  %}
